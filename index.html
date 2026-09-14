@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ru" data-variant="interior">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+	<meta name="robots" content="noindex">
+	<meta name="theme-color" content="#121212">
+	<meta name="description" content="Меню «Суши-Муши», Учкекен: роллы, сеты, пицца, закуски. Соберите заказ и отправьте его в WhatsApp.">
+	<title>Суши-Муши — меню</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Oswald:wght@500;600;700&display=swap">
+	<!-- японские буквы и надпись по кругу логотипа: грузим только нужные символы -->
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700&family=PT+Serif:wght@700&display=swap&text=%E3%82%A6%E3%83%9E%E3%83%AD%E3%83%95%E3%82%BB%E3%83%83%E3%83%88%E3%83%AD%E3%83%BC%E3%83%AB%E7%84%BC%E3%81%8D%E5%A4%A9%E3%81%B7%E3%82%89%E5%B7%BB%E3%83%94%E3%82%B6%E3%82%B9%E3%83%8A%E3%82%AF%E3%83%89%E3%82%B0%E3%83%AA%E3%83%B3%D0%A1%D1%83%D1%88%D0%B8%D0%9C-%20">
+	<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+	<header class="facade">
+		<!-- вывеска как на фасаде: круглый логотип слева, буквы «СУШИ-МУШИ» справа -->
+		<div class="signboard">
+			<svg class="logo" viewBox="0 0 240 240" role="img" aria-label="Логотип Суши-Муши">
+				<defs><path id="ring" d="M26 120a94 94 0 1 1 188 0a94 94 0 1 1-188 0"/></defs>
+				<circle cx="120" cy="120" r="119" fill="#fbfaf7"/>
+				<circle cx="120" cy="120" r="80" fill="none" stroke="#151515" stroke-width="2.2"/>
+				<text class="logo-ring"><textPath href="#ring" textLength="582" lengthAdjust="spacing">Суши-Муши Суши-Муши Суши-Муши </textPath></text>
+				<text class="logo-jp" x="120" y="124" text-anchor="middle" lang="ja">ウマロフ</text>
+				<text class="logo-en" x="120" y="148" text-anchor="middle">SUSHI-MUSHI</text>
+			</svg>
+			<p class="sign" aria-hidden="true">СУШИ-МУШИ</p>
+		</div>
+		<div class="beam" aria-hidden="true"></div>
+	</header>
+
+	<section class="wall" aria-labelledby="slogan">
+		<h1 class="slogan" id="slogan"><span>То место,</span> <span>о котором</span> <span>все спрашивают</span></h1>
+		<p class="wall-info"><span data-hours></span><span class="dot" aria-hidden="true"></span><span data-address></span></p>
+		<div class="phones" data-phones></div>
+		<a class="to-menu" href="#menu">Смотреть меню</a>
+	</section>
+
+	<div class="menubar">
+		<nav class="nav" id="nav" aria-label="Разделы меню"></nav>
+		<button type="button" class="prices-btn" id="prices"></button>
+	</div>
+
+	<main class="menu" id="menu"></main>
+
+	<footer class="floor">
+		<p class="floor-brand">СУШИ-МУШИ <span lang="ja">ウマロフ</span></p>
+		<p data-address></p>
+		<p data-hours></p>
+		<div class="phones" data-phones></div>
+		<p class="floor-note"><span data-prices-date></span>. Калорийность и время приготовления указаны примерно.</p>
+	</footer>
+
+	<div class="toast" id="toast" role="status" hidden></div>
+
+	<div class="orderbar" id="orderbar" hidden>
+		<button type="button" class="orderbar-btn" id="open-order">
+			<span class="orderbar-icon" id="bar-icon"></span>
+			<span>Мой заказ</span>
+			<span class="orderbar-count" id="bar-count"></span>
+		</button>
+	</div>
+
+	<dialog class="sheet" id="order-sheet" aria-labelledby="sheet-title">
+		<div class="sheet-inner">
+			<div class="sheet-head">
+				<h2 id="sheet-title">Мой заказ</h2>
+				<button type="button" class="icon-btn" data-close aria-label="Закрыть">✕</button>
+			</div>
+			<div id="order-lines"></div>
+			<div class="sheet-foot">
+				<div class="total-row"><span>Итого</span><strong class="price" id="order-total"></strong></div>
+				<p class="ready-note" id="ready-note" hidden></p>
+				<button type="button" class="whatsapp" id="send-whatsapp"></button>
+				<div class="call"><span>или позвоните</span><div class="phones" data-phones></div></div>
+				<button type="button" class="secondary" id="clear-order">Очистить заказ</button>
+			</div>
+		</div>
+	</dialog>
+
+	<script src="data/menu.js"></script>
+	<script src="app.js"></script>
+</body>
+</html>
