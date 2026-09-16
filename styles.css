@@ -168,8 +168,8 @@ img { max-width: 100%; }
 	text-decoration: none;
 }
 .nav a[aria-current] { color: #fff; border-bottom-color: var(--glow); }
-/* глазик скрытия цен — только значок */
-.prices-btn {
+/* глазик скрытия цен и переключатель темы — только значки */
+.prices-btn, .theme-btn {
 	flex: none;
 	display: grid;
 	place-items: center;
@@ -182,7 +182,7 @@ img { max-width: 100%; }
 	color: #fff;
 	cursor: pointer;
 }
-.prices-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; }
+.prices-btn svg, .theme-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; }
 
 /* ---------- меню ---------- */
 .menu { padding: 6px var(--page) 40px; }
@@ -453,3 +453,49 @@ dialog.sheet::backdrop { background: rgba(10, 8, 6, .55); }
 	html { scroll-behavior: auto; }
 	.leaf, .leaf-paper, .dish-title svg { transition: none; }
 }
+
+/* ==========================================================
+   Ночная тема «Вечер в зале»: тот же сайт, только свет выключили.
+   По умолчанию сайт светлый, ночную гость включает кнопкой в шапке.
+   ========================================================== */
+:root[data-theme="night"] {
+	--black: #141110;
+	--ink: #f2ece2;
+	--muted: #a4988c;
+	--wall: #191512;
+	--card: #221d18;
+	--paper: #241f19;
+	--wood: #c08a52;
+	--wood-dark: #e0b183;
+	--floor: #120f0d;
+	--red: #c4454c;
+}
+[data-theme="night"] body { box-shadow: 0 0 60px rgba(0, 0, 0, .75); }
+[data-theme="night"] .beam { background: repeating-linear-gradient(90deg, rgba(60, 30, 10, .1) 0 2px, transparent 2px 11px), linear-gradient(180deg, #a8753f, #8a5a30 48%, #5f3b1f); }
+[data-theme="night"] .slogan { color: #f4efe7; text-shadow: 1px 1px 0 #2a2119, 2px 2px 0 #241d16, 3px 3px 0 #1f1913, 7px 9px 16px rgba(0, 0, 0, .6); }
+[data-theme="night"] .wall-info { color: #cfc3b4; }
+[data-theme="night"] .phone { color: var(--ink); }
+[data-theme="night"] .to-menu,
+[data-theme="night"] .add,
+[data-theme="night"] .stepper,
+[data-theme="night"] .orderbar-btn { background: var(--ink); color: #141110; }
+[data-theme="night"] .orderbar-count { background: var(--red); color: #fff; }
+[data-theme="night"] .section-head { border-bottom-color: #3a2f26; }
+[data-theme="night"] .dish { border: 1px solid #2b241d; box-shadow: 0 12px 26px -20px #000; }
+[data-theme="night"] .variants li { border-top-color: #332a22; }
+[data-theme="night"] .leaf-paper {
+	border-color: #342b22;
+	background: linear-gradient(180deg, rgba(255, 210, 150, .07), transparent 18px), repeating-linear-gradient(0deg, rgba(255, 220, 170, .02) 0 1px, transparent 1px 4px), var(--paper);
+}
+[data-theme="night"] .facts li { background: #2e2620; color: #e7d6bf; }
+[data-theme="night"] .set-row { border-bottom-color: #332a22; }
+[data-theme="night"] .set-thumb--empty { border-color: #43382c; color: #8d8174; }
+[data-theme="night"] .deal { background: #1d1915; border-color: #342b22; }
+[data-theme="night"] .deal s.price { color: #8d8074; }
+[data-theme="night"] .floor { background: repeating-linear-gradient(180deg, transparent 0 46px, rgba(0, 0, 0, .18) 46px 48px), linear-gradient(180deg, #171310, #100d0b); }
+[data-theme="night"] .toast { border: 1px solid #3a2f26; }
+[data-theme="night"] dialog.sheet { background: #1d1915; }
+[data-theme="night"] .icon-btn { border-color: #3a2f26; background: var(--paper); color: var(--ink); }
+[data-theme="night"] .line { border-bottom-color: #332a22; }
+[data-theme="night"] .total-row { border-top-color: var(--ink); }
+[data-theme="night"] .secondary { color: #e08a80; }

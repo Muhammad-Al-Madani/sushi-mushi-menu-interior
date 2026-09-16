@@ -24,6 +24,8 @@
 		phone: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 3.5l2.6 3.3-1.6 2.5a11 11 0 0 0 7.1 7.1l2.5-1.6 3.3 2.6-1.3 3A2 2 0 0 1 17 21 15 15 0 0 1 3 7a2 2 0 0 1 .5-2.2l3.1-1.3z"/></svg>',
 		whatsapp: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l1.2-4A8.5 8.5 0 1 1 8 18.9L4 20z"/><path d="M9 8.5c0 3.5 3 6.5 6.5 6.5l1-1.6-2-1-1 .9a5 5 0 0 1-2.8-2.8l.9-1-1-2L9 8.5z"/></svg>',
 		chevron: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>',
+		moon: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>',
+		sun: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
 	};
 
 	// ---------- хранилище: в приватном режиме браузера может быть недоступно ----------
@@ -52,6 +54,7 @@
 
 	let order = sanitize(store.get("order", {}));
 	let pricesHidden = store.get("prices", "shown") === "hidden";
+	let theme = store.get("theme", "day") === "night" ? "night" : "day";
 
 	function sanitize(saved) {
 		const clean = {};
@@ -328,6 +331,20 @@
 		btn.setAttribute("aria-label", "Цены");
 	}
 
+	// ---------- светлая и ночная тема ----------
+	// По умолчанию сайт светлый: ночную гость включает сам, выбор запоминается.
+	function applyTheme() {
+		root.dataset.theme = theme;
+		const btn = $("theme");
+		if (!btn) return;
+		const label = theme === "night" ? "Светлая тема" : "Ночная тема";
+		btn.innerHTML = theme === "night" ? ICON.sun : ICON.moon;
+		btn.setAttribute("aria-pressed", String(theme === "night"));
+		btn.setAttribute("aria-label", label);
+		const meta = document.querySelector('meta[name="theme-color"]');
+		if (meta) meta.setAttribute("content", theme === "night" ? "#0f0d0c" : "#121212");
+	}
+
 	// ---------- контакты ----------
 	function renderContacts() {
 		const phoneLinks = MENU.phones.map((p) => `<a class="phone" href="tel:${p.tel}">${ICON.phone}<span>${p.label}</span></a>`).join("");
@@ -365,6 +382,13 @@
 		applyPrices();
 	});
 
+	const themeBtn = $("theme");
+	if (themeBtn) themeBtn.addEventListener("click", () => {
+		theme = theme === "night" ? "day" : "night";
+		store.set("theme", theme);
+		applyTheme();
+	});
+
 	$("open-order").addEventListener("click", () => {
 		renderOrderLines();
 		$("order-sheet").showModal();
@@ -393,4 +417,5 @@
 	renderMenu();
 	refreshOrder();
 	applyPrices();
+	applyTheme();
 })();
