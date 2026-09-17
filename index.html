@@ -14,12 +14,17 @@
 	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700&family=PT+Serif:wght@700&display=swap&text=%E3%82%A6%E3%83%9E%E3%83%AD%E3%83%95%E3%82%BB%E3%83%83%E3%83%88%E3%83%AD%E3%83%BC%E3%83%AB%E7%84%BC%E3%81%8D%E5%A4%A9%E3%81%B7%E3%82%89%E5%B7%BB%E3%83%94%E3%82%B6%E3%82%B9%E3%83%8A%E3%82%AF%E3%83%89%E3%82%B0%E3%83%AA%E3%83%B3%D0%A1%D1%83%D1%88%D0%B8%D0%9C-%20">
 	<link rel="stylesheet" href="styles.css">
 	<script>
-		/* тёмную тему и стиль кнопок включаем до отрисовки страницы, чтобы ничего не мелькало */
+		/* язык, тёмную тему и стиль кнопок включаем до отрисовки страницы, чтобы ничего не мелькало */
 		try {
 			var read = function (key, fallback) {
 				var saved = localStorage.getItem("sushi-mushi-interior-" + key);
 				return saved === null ? fallback : JSON.parse(saved);
 			};
+			var lang = read("lang", null);
+			if (["ru", "en", "ar"].indexOf(lang) >= 0) {
+				document.documentElement.lang = lang;
+				document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+			}
 			var theme = read("theme", "day");
 			if (["night", "lacquer", "veranda"].indexOf(theme) >= 0) {
 				document.documentElement.dataset.theme = theme;
@@ -45,7 +50,7 @@
 	<header class="facade">
 		<!-- вывеска как на фасаде: круглый логотип слева, буквы «СУШИ-МУШИ» справа -->
 		<div class="signboard">
-			<svg class="logo" viewBox="0 0 240 240" role="img" aria-label="Логотип Суши-Муши">
+			<svg class="logo" viewBox="0 0 240 240" role="img" aria-label="Sushi-Mushi">
 				<defs><path id="ring" d="M26 120a94 94 0 1 1 188 0a94 94 0 1 1-188 0"/></defs>
 				<circle cx="120" cy="120" r="119" fill="#fbfaf7"/>
 				<circle cx="120" cy="120" r="80" fill="none" stroke="#151515" stroke-width="2.2"/>
@@ -59,14 +64,22 @@
 	</header>
 
 	<section class="wall" aria-labelledby="slogan">
-		<h1 class="slogan" id="slogan"><span>То место,</span> <span>о котором</span> <span>все спрашивают</span></h1>
+		<h1 class="slogan" id="slogan"></h1>
 		<p class="wall-info"><span data-hours></span><span class="dot" aria-hidden="true"></span><span data-address></span></p>
 		<div class="phones" data-phones></div>
-		<a class="to-menu" href="#menu">Смотреть меню</a>
+		<a class="to-menu" href="#menu" data-i18n="toMenu"></a>
 	</section>
 
 	<div class="menubar">
 		<nav class="nav" id="nav" aria-label="Разделы меню"></nav>
+		<div class="lang">
+			<button type="button" class="lang-btn" id="lang-btn" aria-expanded="false" aria-haspopup="true"><span>РУ</span></button>
+			<div class="lang-menu" id="lang-menu" hidden>
+				<button type="button" data-lang="ru" lang="ru">Русский</button>
+				<button type="button" data-lang="en" lang="en">English</button>
+				<button type="button" data-lang="ar" lang="ar" dir="rtl">العربية</button>
+			</div>
+		</div>
 		<button type="button" class="theme-btn" id="theme"></button>
 		<button type="button" class="prices-btn" id="prices"></button>
 	</div>
@@ -78,7 +91,7 @@
 		<p data-address></p>
 		<p data-hours></p>
 		<div class="phones" data-phones></div>
-		<p class="floor-note"><span data-prices-date></span>. Калорийность и время приготовления указаны примерно.</p>
+		<p class="floor-note"><span data-prices-date></span>. <span data-i18n="floorNote"></span></p>
 	</footer>
 
 	<div class="toast" id="toast" role="status" hidden></div>
@@ -88,7 +101,7 @@
 	<div class="orderbar" id="orderbar" hidden>
 		<button type="button" class="orderbar-btn" id="open-order">
 			<span class="orderbar-icon" id="bar-icon"></span>
-			<span>Мой заказ</span>
+			<span data-i18n="myOrder"></span>
 			<span class="orderbar-count" id="bar-count"></span>
 		</button>
 	</div>
@@ -96,16 +109,16 @@
 	<dialog class="sheet" id="order-sheet" aria-labelledby="sheet-title">
 		<div class="sheet-inner">
 			<div class="sheet-head">
-				<h2 id="sheet-title">Мой заказ</h2>
-				<button type="button" class="icon-btn" data-close aria-label="Закрыть">✕</button>
+				<h2 id="sheet-title" data-i18n="myOrder"></h2>
+				<button type="button" class="icon-btn" data-close data-i18n-label="close">✕</button>
 			</div>
 			<div id="order-lines"></div>
 			<div class="sheet-foot">
-				<div class="total-row"><span>Итого</span><strong class="price" id="order-total"></strong></div>
+				<div class="total-row"><span data-i18n="total"></span><strong class="price" id="order-total" dir="ltr"></strong></div>
 				<p class="ready-note" id="ready-note" hidden></p>
 				<button type="button" class="whatsapp" id="send-whatsapp"></button>
-				<div class="call"><span>или позвоните</span><div class="phones" data-phones></div></div>
-				<button type="button" class="secondary" id="clear-order">Очистить заказ</button>
+				<div class="call"><span data-i18n="orCall"></span><div class="phones" data-phones></div></div>
+				<button type="button" class="secondary" id="clear-order" data-i18n="clear"></button>
 			</div>
 		</div>
 	</dialog>

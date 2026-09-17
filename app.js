@@ -1,19 +1,76 @@
 /*
- * Электронное меню «Суши-Муши». Общая логика для двух вариантов оформления:
- *   interior — в стиле самого кафе (карточки раскрываются «листочком»);
- *   classic  — как их меню в Instagram (всё написано сразу).
- * Сервер не нужен: меню, «Мой заказ» и сообщение в WhatsApp собираются прямо в браузере.
+ * Электронное меню «Суши-Муши» — вариант в стиле кафе.
+ * Три языка (русский, английский, арабский), светлая и ночная темы,
+ * «Мой заказ» и отправка готового заказа в WhatsApp.
+ * Сервер не нужен: всё считается прямо в браузере.
  */
 (function () {
 	"use strict";
 
 	const MENU = window.SUSHI_MENU;
 	const root = document.documentElement;
-	const VARIANT = root.dataset.variant === "classic" ? "classic" : "interior";
 	const IMAGES = "images/dishes/";
-	const ORDER = VARIANT === "classic"
-		? ["pizza", "classic", "cold", "baked", "fried", "sets", "snacks", "rolldogs", "drinks"]
-		: ["sets", "cold", "baked", "fried", "classic", "pizza", "snacks", "rolldogs", "drinks"];
+	const ORDER = ["sets", "cold", "baked", "fried", "classic", "pizza", "snacks", "rolldogs", "drinks"];
+	const LANGS = ["ru", "en", "ar"];
+	const DARK_THEMES = ["night", "lacquer", "veranda"];
+	const ARABIC_FONTS = "https://fonts.googleapis.com/css2?family=Cairo:wght@600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap";
+
+	const UI = {
+		ru: {
+			title: "Суши-Муши — меню",
+			slogan: ["То место,", "о котором", "все спрашивают"],
+			toMenu: "Смотреть меню", nav: "Разделы меню", language: "Язык",
+			myOrder: "Мой заказ", total: "Итого", close: "Закрыть", clear: "Очистить заказ",
+			confirmClear: "Очистить весь заказ?", empty: "Пока пусто — нажмите «+» рядом с блюдом",
+			ready: (min) => `Примерное время приготовления — около ${min} мин`,
+			sendWhatsapp: "Отправить заказ в WhatsApp", orCall: "или позвоните",
+			composition: "Состав", inSet: "В сете", notInMenu: "в меню отдельно нет",
+			dealSeparate: "По отдельности", dealSet: "В сете", dealSave: "Выгода",
+			pieces: (n) => `${n} шт.`, kcal: (n) => `≈ ${n} ккал`, minutes: (n) => `≈ ${n} мин`,
+			askPrice: "цену уточняйте по телефону", added: (name) => `В заказе: ${name}`,
+			openDish: (name) => `Посмотреть ролл ${name} в меню`,
+			backToSet: (name) => `Вернуться к сету «${name}»`,
+			add: "Добавить", more: "Добавить ещё", less: "Убрать одну",
+			prices: "Цены", toNight: "Ночная тема", toDay: "Светлая тема",
+			floorNote: "Калорийность и время приготовления указаны примерно.",
+		},
+		en: {
+			title: "Sushi-Mushi — menu",
+			slogan: ["The place", "everyone", "asks about"],
+			toMenu: "See the menu", nav: "Menu sections", language: "Language",
+			myOrder: "My order", total: "Total", close: "Close", clear: "Clear the order",
+			confirmClear: "Clear the whole order?", empty: "Nothing yet — tap “+” next to a dish",
+			ready: (min) => `Ready in about ${min} min`,
+			sendWhatsapp: "Send the order on WhatsApp", orCall: "or call us",
+			composition: "Ingredients", inSet: "In the set", notInMenu: "not sold separately",
+			dealSeparate: "Separately", dealSet: "In the set", dealSave: "You save",
+			pieces: (n) => `${n} pcs`, kcal: (n) => `≈ ${n} kcal`, minutes: (n) => `≈ ${n} min`,
+			askPrice: "ask for the price by phone", added: (name) => `Added: ${name}`,
+			openDish: (name) => `See ${name} in the menu`,
+			backToSet: (name) => `Back to the “${name}” set`,
+			add: "Add", more: "One more", less: "One less",
+			prices: "Prices", toNight: "Dark theme", toDay: "Light theme",
+			floorNote: "Calories and cooking time are approximate.",
+		},
+		ar: {
+			title: "سوشي موشي — القائمة",
+			slogan: ["المكان", "الذي يسأل", "عنه الجميع"],
+			toMenu: "تصفّح القائمة", nav: "أقسام القائمة", language: "اللغة",
+			myOrder: "طلبي", total: "الإجمالي", close: "إغلاق", clear: "مسح الطلب",
+			confirmClear: "هل تمسح الطلب بالكامل؟", empty: "القائمة فارغة — اضغط «+» بجانب الطبق",
+			ready: (min) => `جاهز خلال ${min} دقيقة تقريبًا`,
+			sendWhatsapp: "أرسل الطلب عبر واتساب", orCall: "أو اتصل بنا",
+			composition: "المكوّنات", inSet: "داخل الطقم", notInMenu: "لا تُباع منفردة",
+			dealSeparate: "منفردة", dealSet: "داخل الطقم", dealSave: "التوفير",
+			pieces: (n) => `${n} قطع`, kcal: (n) => `≈ ${n} سعرة`, minutes: (n) => `≈ ${n} دقيقة`,
+			askPrice: "اسأل عن السعر هاتفيًا", added: (name) => `أُضيف: ${name}`,
+			openDish: (name) => `شاهد ${name} في القائمة`,
+			backToSet: (name) => `العودة إلى طقم «${name}»`,
+			add: "أضف", more: "زيادة", less: "إنقاص",
+			prices: "الأسعار", toNight: "الوضع الليلي", toDay: "الوضع النهاري",
+			floorNote: "السعرات ووقت التحضير تقريبية.",
+		},
+	};
 
 	const ICON = {
 		plus: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
@@ -33,12 +90,12 @@
 	const store = {
 		get(key, fallback) {
 			try {
-				const raw = localStorage.getItem(`sushi-mushi-${VARIANT}-${key}`);
+				const raw = localStorage.getItem(`sushi-mushi-interior-${key}`);
 				return raw === null ? fallback : JSON.parse(raw);
 			} catch (e) { return fallback; }
 		},
 		set(key, value) {
-			try { localStorage.setItem(`sushi-mushi-${VARIANT}-${key}`, JSON.stringify(value)); } catch (e) { /* без сохранения */ }
+			try { localStorage.setItem(`sushi-mushi-interior-${key}`, JSON.stringify(value)); } catch (e) { /* без сохранения */ }
 		},
 	};
 
@@ -53,11 +110,21 @@
 		}
 	const sections = ORDER.map((id) => MENU.sections.find((s) => s.id === id)).filter(Boolean);
 
-	let order = sanitize(store.get("order", {}));
-	let pricesHidden = store.get("prices", "shown") === "hidden";
-	const DARK_THEMES = ["night", "lacquer", "veranda"];
+	let lang = pickLanguage();
 	let darkTheme = DARK_THEMES.includes(store.get("darkTheme", "night")) ? store.get("darkTheme", "night") : "night";
 	let theme = DARK_THEMES.includes(store.get("theme", "day")) ? store.get("theme", "day") : "day";
+	let pricesHidden = store.get("prices", "shown") === "hidden";
+	let order = sanitize(store.get("order", {}));
+
+	function pickLanguage() {
+		const saved = store.get("lang", null);
+		if (LANGS.includes(saved)) return saved;
+		for (const tag of navigator.languages || [navigator.language || ""]) {
+			const code = String(tag).slice(0, 2).toLowerCase();
+			if (LANGS.includes(code)) return code;
+		}
+		return "ru";
+	}
 
 	function sanitize(saved) {
 		const clean = {};
@@ -70,23 +137,29 @@
 	// ---------- помощники ----------
 	const $ = (id) => document.getElementById(id);
 	const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-	const nf = new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 0 });
-	const money = (value) => `${nf.format(value)} ₽`;
+	const t = (key) => UI[lang][key];
+	const text = (field) => (field && (field[lang] || field.ru)) || "";   // название: запасной язык — русский
+	const only = (field) => (field && field[lang]) || "";                 // состав: без подмены языка
+
+	let nf = numberFormat();
+	function numberFormat() {
+		const locale = lang === "ar" ? "ar-u-nu-latn" : lang === "en" ? "en-US" : "ru-RU";
+		return new Intl.NumberFormat(locale, { maximumFractionDigits: 0 });
+	}
+	const money = (value) => `${nf.format(value)} ₽`;
+	const priceTag = (value, cls = "price") => `<span class="${cls}" dir="ltr">${money(value)}</span>`;
 	const unitPrice = (key) => { const { item, variant } = lines.get(key); return variant ? variant.price : item.price; };
-	const lineName = (key) => { const { item, variant } = lines.get(key); return variant ? `${item.name}, ${variant.name}` : item.name; };
+	const lineName = (key, code) => {
+		const { item, variant } = lines.get(key);
+		const pick = (field) => (field && (field[code || lang] || field.ru)) || "";
+		return variant ? `${pick(item.name)}, ${pick(variant.name)}` : pick(item.name);
+	};
 	const orderTotal = () => Object.keys(order).reduce((sum, key) => sum + unitPrice(key) * order[key], 0);
 
-	function plural(n, one, few, many) {
-		const d10 = n % 10, d100 = n % 100;
-		if (d10 === 1 && d100 !== 11) return one;
-		if (d10 >= 2 && d10 <= 4 && (d100 < 12 || d100 > 14)) return few;
-		return many;
-	}
-
 	let toastTimer = null;
-	function toast(text) {
+	function toast(message) {
 		const el = $("toast");
-		el.textContent = text;
+		el.textContent = message;
 		el.hidden = false;
 		clearTimeout(toastTimer);
 		toastTimer = setTimeout(() => { el.hidden = true; }, 1700);
@@ -105,7 +178,7 @@
 			if (k == null) kcalKnown = false; else kcal += k;
 			return {
 				name: line.name || ref.name,
-				fullName: ref && line.name && line.name !== ref.name ? ref.name : "",
+				fullName: ref && line.name && line.name.ru !== ref.name.ru ? ref.name : null,
 				photo: ref ? ref.photo : line.photo,
 				pieces: ref ? ref.pieces : line.pieces,
 				id: ref ? ref.id : null,
@@ -121,17 +194,16 @@
 	function buyInner(key) {
 		const qty = order[key] || 0;
 		const label = esc(lineName(key));
-		const price = `<span class="price">${money(unitPrice(key))}</span>`;
 		if (!qty)
-			return `${price}<button class="add" type="button" data-act="plus" aria-label="Добавить: ${label}">${ICON.plus}</button>`;
-		return `${price}<span class="stepper" role="group" aria-label="${label}">
-			<button type="button" data-act="minus" aria-label="Убрать одну">${ICON.minus}</button>
-			<output aria-live="polite">${qty}</output>
-			<button type="button" data-act="plus" aria-label="Добавить ещё">${ICON.plus}</button>
+			return `${priceTag(unitPrice(key))}<button class="add" type="button" data-act="plus" aria-label="${t("add")}: ${label}">${ICON.plus}</button>`;
+		return `${priceTag(unitPrice(key))}<span class="stepper" role="group" aria-label="${label}">
+			<button type="button" data-act="minus" aria-label="${t("less")}">${ICON.minus}</button>
+			<output aria-live="polite">${nf.format(qty)}</output>
+			<button type="button" data-act="plus" aria-label="${t("more")}">${ICON.plus}</button>
 		</span>`;
 	}
 	const buy = (key) => `<div class="buy" data-key="${esc(key)}">${buyInner(key)}</div>`;
-	const noPrice = '<div class="buy buy--none"><span class="ask">цену уточняйте по телефону</span></div>';
+	const noPrice = () => `<div class="buy buy--none"><span class="ask">${esc(t("askPrice"))}</span></div>`;
 
 	function change(key, dir) {
 		const next = (order[key] || 0) + dir;
@@ -141,101 +213,79 @@
 		store.set("order", order);
 		document.querySelectorAll(`#menu [data-key="${CSS.escape(key)}"]`).forEach((el) => { el.innerHTML = buyInner(key); });
 		refreshOrder();
-		if (added) toast(`В заказе: ${lineName(key)}`);
+		if (added) toast(t("added")(lineName(key)));
 	}
 
-	// ---------- вариант «в стиле кафе» ----------
+	// ---------- карточки блюд ----------
 	const badge = (item) => (item.badge === "new" ? '<span class="badge">New</span>' : "");
 	const photoTag = (photo, alt, cls) =>
 		`<img class="${cls}" src="${IMAGES}${photo}.webp" alt="${esc(alt)}" loading="lazy" decoding="async">`;
 
 	// штуки и калории — на карточке; время приготовления — только в развёрнутом «листочке»
-	function interiorFacts(item, info, withTime = true) {
-		const facts = [];
-		if (item.pieces) facts.push(`${item.pieces} шт.`);
+	function facts(item, info, withTime = true) {
+		const list = [];
+		if (item.pieces) list.push(t("pieces")(nf.format(item.pieces)));
 		const kcal = info ? info.kcal : item.kcal;
-		if (kcal) facts.push(`≈ ${nf.format(kcal)} ккал`);
-		if (withTime && item.time) facts.push(`≈ ${item.time} мин`);
-		return facts;
+		if (kcal) list.push(t("kcal")(nf.format(kcal)));
+		if (withTime && item.time) list.push(t("minutes")(nf.format(item.time)));
+		return list;
 	}
 
-	function interiorSheet(item, info) {
-		const facts = interiorFacts(item, info).map((f) => `<li>${esc(f)}</li>`).join("");
+	function leaf(item, info) {
+		const chips = facts(item, info).map((f) => `<li>${esc(f)}</li>`).join("");
 		if (!info) {
-			return `${item.desc ? `<p class="leaf-label">Состав</p><p class="leaf-desc">${esc(item.desc)}</p>` : ""}
-				${facts ? `<ul class="facts">${facts}</ul>` : ""}`;
+			const desc = only(item.desc);
+			return `${desc ? `<p class="leaf-label">${esc(t("composition"))}</p><p class="leaf-desc">${esc(desc)}</p>` : ""}
+				${chips ? `<ul class="facts">${chips}</ul>` : ""}`;
 		}
 		const rows = info.rows.map((r) => {
-			const sub = `${r.fullName ? `<small>${esc(r.fullName)}</small>` : ""}${r.inMenu ? "" : "<small>в меню отдельно нет</small>"}`;
+			const sub = `${r.fullName ? `<small>${esc(text(r.fullName))}</small>` : ""}${r.inMenu ? "" : `<small>${esc(t("notInMenu"))}</small>`}`;
 			// у ролла из меню название нажимается: переносит к его карточке с составом и фото
 			const name = r.id
-				? `<button type="button" class="set-name set-jump" data-jump="${esc(r.id)}" data-from="${esc(item.id)}" aria-label="Посмотреть ролл ${esc(r.name)} в меню"><span class="set-jump-name">${esc(r.name)}</span><span class="set-jump-hint" aria-hidden="true">↗</span>${sub}</button>`
-				: `<span class="set-name">${esc(r.name)}${sub}</span>`;
+				? `<button type="button" class="set-name set-jump" data-jump="${esc(r.id)}" data-from="${esc(item.id)}" aria-label="${esc(t("openDish")(text(r.name)))}"><span class="set-jump-name">${esc(text(r.name))}</span><span class="set-jump-hint" aria-hidden="true">↗</span>${sub}</button>`
+				: `<span class="set-name">${esc(text(r.name))}${sub}</span>`;
 			return `<li class="set-row${r.inMenu ? "" : " set-row--unknown"}">
-				${r.photo ? photoTag(r.photo, r.name, "set-thumb") : '<span class="set-thumb set-thumb--empty" aria-hidden="true">?</span>'}
+				${r.photo ? photoTag(r.photo, text(r.name), "set-thumb") : '<span class="set-thumb set-thumb--empty" aria-hidden="true">?</span>'}
 				${name}
-				<span class="set-price">${r.from != null ? `<span class="price">${range(r.from, r.to)}</span>` : "—"}</span>
+				<span class="set-price">${r.from != null ? `<span class="price" dir="ltr">${range(r.from, r.to)}</span>` : "—"}</span>
 			</li>`;
 		}).join("");
 		const deal = info.known && info.saveMin > 0
 			? `<div class="deal">
-				<div><span>По отдельности</span><s class="price">${range(info.min, info.max)}</s></div>
-				<div><span>В сете</span><b class="price">${money(item.price)}</b></div>
-				<div class="deal-save"><span>Выгода</span><b class="price">${info.saveMin === info.saveMax ? "" : "от "}${money(info.saveMin)}</b></div>
+				<div><span>${esc(t("dealSeparate"))}</span><s class="price" dir="ltr">${range(info.min, info.max)}</s></div>
+				<div><span>${esc(t("dealSet"))}</span><b class="price" dir="ltr">${money(item.price)}</b></div>
+				<div class="deal-save"><span>${esc(t("dealSave"))}</span><b class="price" dir="ltr">${info.saveMin === info.saveMax ? "" : "≥ "}${money(info.saveMin)}</b></div>
 			</div>`
 			: "";
-		return `<p class="leaf-label">В сете</p><ul class="set-rows">${rows}</ul>${deal}
-			${facts ? `<ul class="facts">${facts}</ul>` : ""}`;
+		return `<p class="leaf-label">${esc(t("inSet"))}</p><ul class="set-rows">${rows}</ul>${deal}
+			${chips ? `<ul class="facts">${chips}</ul>` : ""}`;
 	}
 
-	function interiorItem(item) {
+	function renderItem(item) {
 		const info = item.set ? setInfo(item) : null;
-		const facts = interiorFacts(item, info, false);
+		const shortFacts = facts(item, info, false);
 		let media = "";
-		if (item.photo) media = photoTag(item.photo, item.name, "dish-photo");
+		if (item.photo) media = photoTag(item.photo, text(item.name), "dish-photo");
 		else if (info) {
 			const shots = info.rows.filter((r) => r.photo).slice(0, 3);
 			media = `<span class="dish-collage" aria-hidden="true">${shots.map((r) => photoTag(r.photo, "", "")).join("")}</span>`;
 		}
 		const expandable = Boolean(item.desc || info || item.kcal || item.time);
 		const body = item.variants
-			? `<ul class="variants">${item.variants.map((v) => `<li><span class="variant-name">${esc(v.name)}</span>${buy(`${item.id}:${v.id}`)}</li>`).join("")}</ul>`
-			: item.price == null ? noPrice : buy(item.id);
+			? `<ul class="variants">${item.variants.map((v) =>
+				`<li><span class="variant-name">${esc(text(v.name))}</span>${buy(`${item.id}:${v.id}`)}</li>`).join("")}</ul>`
+			: item.price == null ? noPrice() : buy(item.id);
 		return `<article class="dish${media ? "" : " dish--plain"}${item.set ? " dish--set" : ""}" data-dish="${esc(item.id)}">
 			${media ? `<div class="dish-media" data-toggle>${media}</div>` : ""}
 			<div class="dish-main">
 				${expandable
 					? `<button class="dish-title" type="button" data-toggle aria-expanded="false" aria-controls="leaf-${esc(item.id)}">
-						<span class="dish-name">${esc(item.name)}${badge(item)}</span>${ICON.chevron}</button>`
-					: `<h3 class="dish-title"><span class="dish-name">${esc(item.name)}${badge(item)}</span></h3>`}
-				${facts.length && !item.variants ? `<p class="dish-facts">${esc(facts.join(" · "))}</p>` : ""}
+						<span class="dish-name">${esc(text(item.name))}${badge(item)}</span>${ICON.chevron}</button>`
+					: `<h3 class="dish-title"><span class="dish-name">${esc(text(item.name))}${badge(item)}</span></h3>`}
+				${shortFacts.length && !item.variants ? `<p class="dish-facts">${esc(shortFacts.join(" · "))}</p>` : ""}
 				${body}
 			</div>
-			${expandable ? `<div class="leaf" id="leaf-${esc(item.id)}"><div class="leaf-inner"><div class="leaf-paper">${interiorSheet(item, info)}</div></div></div>` : ""}
-		</article>`;
-	}
-
-	// ---------- вариант «как у вас» ----------
-	// цена прямо в названии, как на их картинках: «Филадельфия классик -410₽»
-	const printed = (price) => `<span class="price">-${nf.format(price)}₽</span>`;
-
-	function classicItem(item) {
-		const info = item.set ? setInfo(item) : null;
-		const newMark = item.badge === "new" ? '<span class="new" aria-label="Новинка">New</span>' : "";
-		const name = item.set ? `${esc(item.name)} ${item.pieces}шт` : esc(item.name);
-		const title = item.price != null ? `${name} ${printed(item.price)}` : name;
-		const desc = info ? info.rows.map((r) => r.name).join(", ") : item.desc;
-		const body = item.variants
-			? `<ul class="variants">${item.variants.map((v) =>
-				`<li><span class="variant-name">${esc(v.name)} ${printed(v.price)}</span>${buy(`${item.id}:${v.id}`)}</li>`).join("")}</ul>`
-			: item.price == null ? noPrice : buy(item.id);
-		return `<article class="row${item.photo ? "" : " row--plain"}">
-			${item.photo ? `<div class="row-media">${photoTag(item.photo, item.name, "row-photo")}${newMark}</div>` : ""}
-			<div class="row-text">
-				<h3 class="row-name">${title}${item.photo ? "" : newMark}</h3>
-				${desc ? `<p class="row-desc">${esc(desc)}</p>` : ""}
-				${body}
-			</div>
+			${expandable ? `<div class="leaf" id="leaf-${esc(item.id)}"><div class="leaf-inner"><div class="leaf-paper">${leaf(item, info)}</div></div></div>` : ""}
 		</article>`;
 	}
 
@@ -260,7 +310,7 @@
 		const set = byId.get(fromId);
 		const back = $("back-to-set");
 		if (!set || !back) return;
-		back.innerHTML = `${ICON.arrowBack}<span>Вернуться к сету «${esc(set.name)}»</span>`;
+		back.innerHTML = `${ICON.arrowBack}<span>${esc(t("backToSet")(text(set.name)))}</span>`;
 		back.dataset.back = fromId;
 		back.hidden = false;
 		clearTimeout(backTimer);
@@ -269,15 +319,14 @@
 
 	// ---------- меню целиком ----------
 	function renderMenu() {
-		$("nav").innerHTML = sections.map((s) => `<a href="#${s.id}" data-section="${s.id}">${esc(s.title)}</a>`).join("");
-		const render = VARIANT === "classic" ? classicItem : interiorItem;
+		$("nav").innerHTML = sections.map((s) => `<a href="#${s.id}" data-section="${s.id}">${esc(text(s.title))}</a>`).join("");
 		$("menu").innerHTML = sections.map((s) => `
 			<section class="section section--${s.id}" id="${s.id}" aria-labelledby="h-${s.id}">
 				<header class="section-head">
-					<h2 class="section-title" id="h-${s.id}">${esc(s.title)}${VARIANT === "classic" ? ":" : ""}</h2>
-					<span class="section-mark" aria-hidden="true">${VARIANT === "classic" ? "Суши -Муши" : esc(s.mark || "")}</span>
+					<h2 class="section-title" id="h-${s.id}">${esc(text(s.title))}</h2>
+					<span class="section-mark" aria-hidden="true">${esc(s.mark || "")}</span>
 				</header>
-				<div class="items">${s.items.map(render).join("")}</div>
+				<div class="items">${s.items.map(renderItem).join("")}</div>
 			</section>`).join("");
 		watchSections();
 	}
@@ -307,8 +356,8 @@
 	function refreshOrder() {
 		const count = Object.values(order).reduce((n, qty) => n + qty, 0);
 		$("orderbar").hidden = count === 0;
-		$("bar-count").textContent = String(count);
-		$("open-order").setAttribute("aria-label", `Мой заказ: ${count} ${plural(count, "позиция", "позиции", "позиций")}`);
+		$("bar-count").textContent = nf.format(count);
+		$("open-order").setAttribute("aria-label", `${t("myOrder")}: ${nf.format(count)}`);
 		if ($("order-sheet").open) renderOrderLines();
 	}
 
@@ -327,21 +376,21 @@
 			const { item, variant } = lines.get(key);
 			return `<div class="line" data-key="${esc(key)}">
 				<div class="line-text">
-					<span class="line-name">${esc(item.name)}</span>
-					<span class="line-unit">${variant ? `${esc(variant.name)} · ` : ""}<span class="price">${money(unitPrice(key))}</span></span>
+					<span class="line-name">${esc(text(item.name))}</span>
+					<span class="line-unit">${variant ? `${esc(text(variant.name))} · ` : ""}${priceTag(unitPrice(key))}</span>
 				</div>
 				<span class="stepper" role="group" aria-label="${esc(lineName(key))}">
-					<button type="button" data-act="minus" aria-label="Убрать одну">${ICON.minus}</button>
-					<output>${order[key]}</output>
-					<button type="button" data-act="plus" aria-label="Добавить ещё">${ICON.plus}</button>
+					<button type="button" data-act="minus" aria-label="${t("less")}">${ICON.minus}</button>
+					<output>${nf.format(order[key])}</output>
+					<button type="button" data-act="plus" aria-label="${t("more")}">${ICON.plus}</button>
 				</span>
-				<span class="line-sum price">${money(unitPrice(key) * order[key])}</span>
+				${priceTag(unitPrice(key) * order[key], "line-sum price")}
 			</div>`;
-		}).join("") : '<p class="empty">Пока пусто — нажмите «+» рядом с блюдом</p>';
+		}).join("") : `<p class="empty">${esc(t("empty"))}</p>`;
 
 		const minutes = readyIn();
 		$("ready-note").hidden = !minutes;
-		$("ready-note").textContent = minutes ? `Примерное время приготовления — около ${minutes} мин` : "";
+		$("ready-note").textContent = minutes ? t("ready")(nf.format(minutes)) : "";
 		$("order-total").textContent = money(orderTotal());
 		$("send-whatsapp").hidden = keys.length === 0;
 		$("clear-order").hidden = keys.length === 0;
@@ -352,11 +401,42 @@
 		}
 	}
 
+	// заказ в кафе уходит всегда по-русски: его читают повар и кассир
 	function whatsappText() {
+		const ru = new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 0 });
+		const sum = (value) => `${ru.format(value)} ₽`;
 		const rows = Object.keys(order).map((key) =>
-			`• ${lineName(key)} × ${order[key]} — ${money(unitPrice(key) * order[key])}`);
-		// неразрывные пробелы из форматирования чисел меняем на обычные — так текст надёжнее в любом мессенджере
-		return ["Здравствуйте! Хочу сделать заказ:", ...rows, `Итого: ${money(orderTotal())}`].join("\n").replace(/[\u00a0\u202f]/g, " ");
+			`• ${lineName(key, "ru")} × ${order[key]} — ${sum(unitPrice(key) * order[key])}`);
+		return ["Здравствуйте! Хочу сделать заказ:", ...rows, `Итого: ${sum(orderTotal())}`]
+			.join("\n").replace(/[  ]/g, " ");
+	}
+
+	// ---------- язык ----------
+	function applyLanguage() {
+		root.lang = lang;
+		root.dir = lang === "ar" ? "rtl" : "ltr";
+		document.title = t("title");
+		nf = numberFormat();
+		if (lang === "ar" && !$("arabic-fonts")) {
+			const link = document.createElement("link");
+			link.id = "arabic-fonts";
+			link.rel = "stylesheet";
+			link.href = ARABIC_FONTS;
+			document.head.appendChild(link);
+		}
+		$("slogan").innerHTML = t("slogan").map((part) => `<span>${esc(part)}</span>`).join(" ");
+		document.querySelectorAll("[data-i18n]").forEach((el) => { el.textContent = t(el.dataset.i18n); });
+		document.querySelectorAll("[data-i18n-label]").forEach((el) => { el.setAttribute("aria-label", t(el.dataset.i18nLabel)); });
+		$("nav").setAttribute("aria-label", t("nav"));
+		$("lang-btn").setAttribute("aria-label", t("language"));
+		$("lang-btn").querySelector("span").textContent = { ru: "РУ", en: "EN", ar: "ع" }[lang];
+		$("lang-menu").querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.lang === lang)));
+		$("send-whatsapp").innerHTML = `${ICON.whatsapp}<span>${esc(t("sendWhatsapp"))}</span>`;
+		renderContacts();
+		renderMenu();
+		refreshOrder();
+		applyPrices();
+		applyTheme();
 	}
 
 	// ---------- цены: скрыть / показать ----------
@@ -367,20 +447,19 @@
 		const btn = $("prices");
 		btn.innerHTML = pricesHidden ? ICON.eyeOff : ICON.eye;
 		btn.setAttribute("aria-pressed", String(pricesHidden));
-		btn.setAttribute("aria-label", "Цены");
+		btn.setAttribute("aria-label", t("prices"));
 	}
 
 	// ---------- светлая и ночная тема ----------
-	// По умолчанию сайт светлый: ночную гость включает сам, выбор запоминается.
+	// По умолчанию сайт светлый: тёмную гость включает сам, выбор запоминается.
 	function applyTheme() {
 		root.dataset.theme = theme;
 		if (theme === "day") delete root.dataset.dark; else root.dataset.dark = "1";
 		const btn = $("theme");
 		if (!btn) return;
-		const label = theme === "night" ? "Светлая тема" : "Ночная тема";
-		btn.innerHTML = theme === "night" ? ICON.sun : ICON.moon;
-		btn.setAttribute("aria-pressed", String(theme === "night"));
-		btn.setAttribute("aria-label", label);
+		btn.innerHTML = theme === "day" ? ICON.moon : ICON.sun;
+		btn.setAttribute("aria-pressed", String(theme !== "day"));
+		btn.setAttribute("aria-label", theme === "day" ? t("toNight") : t("toDay"));
 		const meta = document.querySelector('meta[name="theme-color"]');
 		if (meta) meta.setAttribute("content", getComputedStyle(root).getPropertyValue("--black").trim() || "#121212");
 	}
@@ -399,16 +478,21 @@
 
 	// ---------- контакты ----------
 	function renderContacts() {
-		const phoneLinks = MENU.phones.map((p) => `<a class="phone" href="tel:${p.tel}">${ICON.phone}<span>${p.label}</span></a>`).join("");
+		const phoneLinks = MENU.phones.map((p) =>
+			`<a class="phone" href="tel:${p.tel}" dir="ltr">${ICON.phone}<span>${p.label}</span></a>`).join("");
 		document.querySelectorAll("[data-phones]").forEach((el) => { el.innerHTML = phoneLinks; });
-		document.querySelectorAll("[data-address]").forEach((el) => { el.textContent = MENU.address; });
-		document.querySelectorAll("[data-hours]").forEach((el) => { el.textContent = MENU.hours; });
-		document.querySelectorAll("[data-prices-date]").forEach((el) => { el.textContent = MENU.pricesDate; });
-		$("send-whatsapp").innerHTML = `${ICON.whatsapp}<span>Отправить заказ в WhatsApp</span>`;
+		document.querySelectorAll("[data-address]").forEach((el) => { el.textContent = text(MENU.address); });
+		document.querySelectorAll("[data-hours]").forEach((el) => { el.textContent = text(MENU.hours); });
+		document.querySelectorAll("[data-prices-date]").forEach((el) => { el.textContent = text(MENU.pricesDate); });
 		$("bar-icon").innerHTML = ICON.bag;
 	}
 
 	// ---------- события ----------
+	function closeLangMenu() {
+		$("lang-menu").hidden = true;
+		$("lang-btn").setAttribute("aria-expanded", "false");
+	}
+
 	document.addEventListener("click", (event) => {
 		const act = event.target.closest("[data-act]");
 		if (act) {
@@ -426,9 +510,26 @@
 			if (btn) btn.setAttribute("aria-expanded", String(open));
 			return;
 		}
+		const langOption = event.target.closest("[data-lang]");
+		if (langOption) {
+			lang = langOption.dataset.lang;
+			store.set("lang", lang);
+			closeLangMenu();
+			applyLanguage();
+			return;
+		}
+		if (event.target.closest("#lang-btn")) {
+			const opening = $("lang-menu").hidden;
+			$("lang-menu").hidden = !opening;
+			$("lang-btn").setAttribute("aria-expanded", String(opening));
+			return;
+		}
+		closeLangMenu();
 		const closeBtn = event.target.closest("[data-close]");
 		if (closeBtn) closeBtn.closest("dialog").close();
 	});
+
+	document.addEventListener("keydown", (event) => { if (event.key === "Escape") closeLangMenu(); });
 
 	$("prices").addEventListener("click", () => {
 		pricesHidden = !pricesHidden;
@@ -464,7 +565,7 @@
 	});
 
 	$("clear-order").addEventListener("click", () => {
-		if (!window.confirm("Очистить весь заказ?")) return;
+		if (!window.confirm(t("confirmClear"))) return;
 		order = {};
 		store.set("order", order);
 		renderMenu();
@@ -477,9 +578,5 @@
 		dialog.addEventListener("click", (event) => { if (event.target === dialog) dialog.close(); });
 	});
 
-	renderContacts();
-	renderMenu();
-	refreshOrder();
-	applyPrices();
-	applyTheme();
+	applyLanguage();
 })();

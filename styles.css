@@ -214,10 +214,10 @@ img { max-width: 100%; }
 .dish-media { display: grid; place-items: center; height: 100px; cursor: pointer; }
 .dish-photo { max-height: 100px; object-fit: contain; filter: drop-shadow(0 8px 8px rgba(40, 25, 10, .18)); }
 .dish-collage { position: relative; width: 118px; height: 100px; }
-.dish-collage img { position: absolute; width: 80px; filter: drop-shadow(0 6px 6px rgba(40, 25, 10, .2)); }
-.dish-collage img:nth-child(1) { left: 0; top: 40px; z-index: 3; }
-.dish-collage img:nth-child(2) { left: 36px; top: 4px; z-index: 1; }
-.dish-collage img:nth-child(3) { left: 38px; top: 50px; z-index: 2; }
+.dish-collage img { position: absolute; width: 80px; inset-inline-start: 0; filter: drop-shadow(0 6px 6px rgba(40, 25, 10, .2)); }
+.dish-collage img:nth-child(1) { inset-inline-start: 0; top: 40px; z-index: 3; }
+.dish-collage img:nth-child(2) { inset-inline-start: 36px; top: 4px; z-index: 1; }
+.dish-collage img:nth-child(3) { inset-inline-start: 38px; top: 50px; z-index: 2; }
 
 .dish-main { display: flex; flex-direction: column; min-width: 0; min-height: 100px; }
 .dish--plain .dish-main { min-height: 0; }
@@ -232,7 +232,7 @@ img { max-width: 100%; }
 	border: 0;
 	background: none;
 	color: inherit;
-	text-align: left;
+	text-align: start;
 	font: 700 16px/1.25 var(--f-body);
 	cursor: pointer;
 }
@@ -519,7 +519,7 @@ dialog.sheet::backdrop { background: rgba(10, 8, 6, .55); }
 
 /* ---------- переход из состава сета к карточке ролла ---------- */
 .dish { scroll-margin-top: 66px; outline: 2px solid transparent; outline-offset: 3px; }
-button.set-name { padding: 0; border: 0; background: none; color: inherit; text-align: left; cursor: pointer; }
+button.set-name { padding: 0; border: 0; background: none; color: inherit; text-align: start; cursor: pointer; }
 .set-jump-name { border-bottom: 1px dashed var(--wood); }
 .set-jump-hint { margin-left: 5px; font-size: 11px; color: var(--wood); }
 @keyframes dish-flash {
@@ -553,3 +553,58 @@ button.set-name { padding: 0; border: 0; background: none; color: inherit; text-
 [data-demo="on"] .back-to-set { bottom: 192px; }
 
 @media (prefers-reduced-motion: reduce) { .dish.flash { animation: none; outline-color: var(--wood); } }
+
+/* ---------- переключатель языка ---------- */
+.lang { position: relative; flex: none; }
+.lang-btn {
+	display: grid;
+	place-items: center;
+	width: 38px;
+	height: 38px;
+	padding: 0;
+	border: 1px solid rgba(255, 255, 255, .28);
+	border-radius: 50%;
+	background: transparent;
+	color: #fff;
+	font: 600 12px/1 var(--f-body);
+	letter-spacing: .04em;
+	cursor: pointer;
+}
+.lang-menu {
+	position: absolute;
+	top: calc(100% + 8px);
+	inset-inline-end: 0;
+	z-index: 30;
+	display: grid;
+	min-width: 150px;
+	padding: 6px;
+	border-radius: 14px;
+	background: #1c1917;
+	box-shadow: 0 16px 30px -12px rgba(0, 0, 0, .7);
+}
+.lang-menu button {
+	padding: 10px 12px;
+	border: 0;
+	border-radius: 10px;
+	background: none;
+	color: #f2ece2;
+	font: 600 15px/1 var(--f-body);
+	text-align: start;
+	cursor: pointer;
+}
+.lang-menu button[aria-pressed="true"] { background: rgba(255, 255, 255, .12); color: #fff; }
+
+/* ---------- арабский: свои шрифты и разворот страницы справа налево ---------- */
+:root[lang="ar"] {
+	--f-head: "Cairo", "IBM Plex Sans Arabic", system-ui, sans-serif;
+	--f-body: "IBM Plex Sans Arabic", system-ui, sans-serif;
+}
+:root[lang="ar"] .sign, :root[lang="ar"] .floor-brand { font-family: var(--f-head); letter-spacing: 0; }
+:root[lang="ar"] .slogan { letter-spacing: 0; line-height: 1.15; }
+:root[lang="ar"] .nav a, :root[lang="ar"] .section-title { letter-spacing: 0; }
+[dir="rtl"] .leaf-paper { border-radius: 14px 4px 14px 14px; }
+[dir="rtl"] .dish-collage img:nth-child(1) { inset-inline-start: 0; }
+[dir="rtl"] .dish-collage img:nth-child(2) { inset-inline-start: 36px; }
+[dir="rtl"] .dish-collage img:nth-child(3) { inset-inline-start: 38px; }
+[dir="rtl"] .to-menu::after { content: "↓"; }
+[dir="rtl"] .back-to-set svg { transform: scaleX(-1); }
