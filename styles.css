@@ -516,3 +516,40 @@ dialog.sheet::backdrop { background: rgba(10, 8, 6, .55); }
 [data-buttons="outline"] .stepper { border: 1.8px solid currentColor; background: transparent; color: var(--ink); }
 [data-buttons="outline"] .stepper button { color: var(--ink); }
 [data-buttons="outline"] .to-menu { border: 1.8px solid currentColor; background: transparent; color: var(--ink); box-shadow: none; }
+
+/* ---------- переход из состава сета к карточке ролла ---------- */
+.dish { scroll-margin-top: 66px; outline: 2px solid transparent; outline-offset: 3px; }
+button.set-name { padding: 0; border: 0; background: none; color: inherit; text-align: left; cursor: pointer; }
+.set-jump-name { border-bottom: 1px dashed var(--wood); }
+.set-jump-hint { margin-left: 5px; font-size: 11px; color: var(--wood); }
+@keyframes dish-flash {
+	0%, 60% { outline-color: var(--wood); }
+	100% { outline-color: transparent; }
+}
+.dish.flash { animation: dish-flash 1.6s ease-out 1; }
+
+.back-to-set {
+	position: fixed;
+	left: 50%;
+	bottom: calc(76px + env(safe-area-inset-bottom));
+	z-index: 35;
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	max-width: calc(100% - 32px);
+	padding: 11px 16px;
+	border: 0;
+	border-radius: 999px;
+	background: var(--wood-dark);
+	color: #fff;
+	font: 600 14px/1 var(--f-body);
+	box-shadow: 0 12px 26px -10px rgba(0, 0, 0, .5);
+	transform: translateX(-50%);
+	cursor: pointer;
+}
+.back-to-set svg { flex: none; width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.back-to-set span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+[data-dark] .back-to-set { background: var(--wood); color: var(--black); }
+[data-demo="on"] .back-to-set { bottom: 192px; }
+
+@media (prefers-reduced-motion: reduce) { .dish.flash { animation: none; outline-color: var(--wood); } }

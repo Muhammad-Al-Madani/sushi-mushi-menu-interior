@@ -24,6 +24,7 @@
 		phone: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 3.5l2.6 3.3-1.6 2.5a11 11 0 0 0 7.1 7.1l2.5-1.6 3.3 2.6-1.3 3A2 2 0 0 1 17 21 15 15 0 0 1 3 7a2 2 0 0 1 .5-2.2l3.1-1.3z"/></svg>',
 		whatsapp: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l1.2-4A8.5 8.5 0 1 1 8 18.9L4 20z"/><path d="M9 8.5c0 3.5 3 6.5 6.5 6.5l1-1.6-2-1-1 .9a5 5 0 0 1-2.8-2.8l.9-1-1-2L9 8.5z"/></svg>',
 		chevron: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>',
+		arrowBack: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>',
 		moon: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>',
 		sun: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
 	};
@@ -107,6 +108,7 @@
 				fullName: ref && line.name && line.name !== ref.name ? ref.name : "",
 				photo: ref ? ref.photo : line.photo,
 				pieces: ref ? ref.pieces : line.pieces,
+				id: ref ? ref.id : null,
 				from, to, inMenu: Boolean(ref || line.from),
 			};
 		});
@@ -163,11 +165,18 @@
 			return `${item.desc ? `<p class="leaf-label">Состав</p><p class="leaf-desc">${esc(item.desc)}</p>` : ""}
 				${facts ? `<ul class="facts">${facts}</ul>` : ""}`;
 		}
-		const rows = info.rows.map((r) => `<li class="set-row${r.inMenu ? "" : " set-row--unknown"}">
-			${r.photo ? photoTag(r.photo, r.name, "set-thumb") : '<span class="set-thumb set-thumb--empty" aria-hidden="true">?</span>'}
-			<span class="set-name">${esc(r.name)}${r.fullName ? `<small>${esc(r.fullName)}</small>` : ""}${r.inMenu ? "" : "<small>в меню отдельно нет</small>"}</span>
-			<span class="set-price">${r.from != null ? `<span class="price">${range(r.from, r.to)}</span>` : "—"}</span>
-		</li>`).join("");
+		const rows = info.rows.map((r) => {
+			const sub = `${r.fullName ? `<small>${esc(r.fullName)}</small>` : ""}${r.inMenu ? "" : "<small>в меню отдельно нет</small>"}`;
+			// у ролла из меню название нажимается: переносит к его карточке с составом и фото
+			const name = r.id
+				? `<button type="button" class="set-name set-jump" data-jump="${esc(r.id)}" data-from="${esc(item.id)}" aria-label="Посмотреть ролл ${esc(r.name)} в меню"><span class="set-jump-name">${esc(r.name)}</span><span class="set-jump-hint" aria-hidden="true">↗</span>${sub}</button>`
+				: `<span class="set-name">${esc(r.name)}${sub}</span>`;
+			return `<li class="set-row${r.inMenu ? "" : " set-row--unknown"}">
+				${r.photo ? photoTag(r.photo, r.name, "set-thumb") : '<span class="set-thumb set-thumb--empty" aria-hidden="true">?</span>'}
+				${name}
+				<span class="set-price">${r.from != null ? `<span class="price">${range(r.from, r.to)}</span>` : "—"}</span>
+			</li>`;
+		}).join("");
 		const deal = info.known && info.saveMin > 0
 			? `<div class="deal">
 				<div><span>По отдельности</span><s class="price">${range(info.min, info.max)}</s></div>
@@ -228,6 +237,34 @@
 				${body}
 			</div>
 		</article>`;
+	}
+
+	// ---------- переход из сета к роллу и обратно ----------
+	function openDish(dish) {
+		if (dish.classList.contains("open")) return;
+		dish.classList.add("open");
+		const title = dish.querySelector("button.dish-title");
+		if (title) title.setAttribute("aria-expanded", "true");
+	}
+
+	let backTimer = null;
+	function jumpToDish(id, fromId) {
+		const dish = document.querySelector(`[data-dish="${CSS.escape(id)}"]`);
+		if (!dish) return;
+		openDish(dish);
+		dish.scrollIntoView({ block: "center", behavior: "smooth" });
+		dish.classList.remove("flash");
+		void dish.offsetWidth; // перезапускаем подсветку, если нажали второй раз
+		dish.classList.add("flash");
+
+		const set = byId.get(fromId);
+		const back = $("back-to-set");
+		if (!set || !back) return;
+		back.innerHTML = `${ICON.arrowBack}<span>Вернуться к сету «${esc(set.name)}»</span>`;
+		back.dataset.back = fromId;
+		back.hidden = false;
+		clearTimeout(backTimer);
+		backTimer = setTimeout(() => { back.hidden = true; }, 40000);
 	}
 
 	// ---------- меню целиком ----------
@@ -379,6 +416,8 @@
 			if (holder) change(holder.dataset.key, act.dataset.act === "plus" ? 1 : -1);
 			return;
 		}
+		const jump = event.target.closest("[data-jump]");
+		if (jump) { jumpToDish(jump.dataset.jump, jump.dataset.from); return; }
 		const toggle = event.target.closest("[data-toggle]");
 		if (toggle) {
 			const dish = toggle.closest(".dish");
@@ -402,6 +441,16 @@
 		theme = theme === "day" ? darkTheme : "day";
 		store.set("theme", theme);
 		applyTheme();
+	});
+
+	const backBtn = $("back-to-set");
+	if (backBtn) backBtn.addEventListener("click", () => {
+		backBtn.hidden = true;
+		clearTimeout(backTimer);
+		const set = document.querySelector(`[data-dish="${CSS.escape(backBtn.dataset.back)}"]`);
+		if (!set) return;
+		openDish(set);
+		set.scrollIntoView({ block: "start", behavior: "smooth" });
 	});
 
 	$("open-order").addEventListener("click", () => {
