@@ -54,7 +54,9 @@
 
 	let order = sanitize(store.get("order", {}));
 	let pricesHidden = store.get("prices", "shown") === "hidden";
-	let theme = store.get("theme", "day") === "night" ? "night" : "day";
+	const DARK_THEMES = ["night", "lacquer", "veranda"];
+	let darkTheme = DARK_THEMES.includes(store.get("darkTheme", "night")) ? store.get("darkTheme", "night") : "night";
+	let theme = DARK_THEMES.includes(store.get("theme", "day")) ? store.get("theme", "day") : "day";
 
 	function sanitize(saved) {
 		const clean = {};
@@ -335,6 +337,7 @@
 	// По умолчанию сайт светлый: ночную гость включает сам, выбор запоминается.
 	function applyTheme() {
 		root.dataset.theme = theme;
+		if (theme === "day") delete root.dataset.dark; else root.dataset.dark = "1";
 		const btn = $("theme");
 		if (!btn) return;
 		const label = theme === "night" ? "Светлая тема" : "Ночная тема";
@@ -342,8 +345,20 @@
 		btn.setAttribute("aria-pressed", String(theme === "night"));
 		btn.setAttribute("aria-label", label);
 		const meta = document.querySelector('meta[name="theme-color"]');
-		if (meta) meta.setAttribute("content", theme === "night" ? "#0f0d0c" : "#121212");
+		if (meta) meta.setAttribute("content", getComputedStyle(root).getPropertyValue("--black").trim() || "#121212");
 	}
+
+	// ручка для демо-панели: она подключается только по ссылке с ?demo
+	window.SUSHI_UI = {
+		themes: ["day", ...DARK_THEMES],
+		getTheme: () => theme,
+		setTheme(next) {
+			theme = DARK_THEMES.includes(next) ? next : "day";
+			if (theme !== "day") { darkTheme = theme; store.set("darkTheme", darkTheme); }
+			store.set("theme", theme);
+			applyTheme();
+		},
+	};
 
 	// ---------- контакты ----------
 	function renderContacts() {
@@ -384,7 +399,7 @@
 
 	const themeBtn = $("theme");
 	if (themeBtn) themeBtn.addEventListener("click", () => {
-		theme = theme === "night" ? "day" : "night";
+		theme = theme === "day" ? darkTheme : "day";
 		store.set("theme", theme);
 		applyTheme();
 	});

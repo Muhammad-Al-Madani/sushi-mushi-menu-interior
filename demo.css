@@ -1,0 +1,52 @@
+/* Оформление демо-панели. Подключается только вместе с demo.js по ссылке с «?demo». */
+
+.demo {
+	position: fixed;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	z-index: 40;
+	display: grid;
+	gap: 8px;
+	max-width: 480px;
+	margin: 0 auto;
+	padding: 10px 14px calc(12px + env(safe-area-inset-bottom));
+	background: rgba(16, 14, 12, .97);
+	color: #f2ece2;
+	box-shadow: 0 -12px 30px rgba(0, 0, 0, .45);
+}
+.demo-head { display: flex; align-items: baseline; gap: 8px; }
+.demo-head b { font: 700 13px/1 var(--f-body); }
+.demo-head span { flex: 1; font: 500 11px/1.2 var(--f-body); color: rgba(242, 236, 226, .5); }
+.demo-hide { padding: 4px; border: 0; background: none; color: var(--glow); font: 600 12px/1 var(--f-body); cursor: pointer; }
+.demo-row { display: grid; gap: 6px; }
+.demo-label { font: 600 10px/1 var(--f-body); letter-spacing: .14em; text-transform: uppercase; color: rgba(242, 236, 226, .5); }
+.demo-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.demo-chips button {
+	padding: 8px 12px;
+	border: 1px solid rgba(242, 236, 226, .3);
+	border-radius: 999px;
+	background: transparent;
+	color: #f2ece2;
+	font: 600 13px/1 var(--f-body);
+	cursor: pointer;
+}
+.demo-chips button[aria-pressed="true"] { border-color: #f2ece2; background: #f2ece2; color: #16120f; }
+
+.demo-show {
+	position: fixed;
+	right: 12px;
+	bottom: calc(76px + env(safe-area-inset-bottom));
+	z-index: 40;
+	padding: 8px 14px;
+	border: 1px solid rgba(255, 255, 255, .35);
+	border-radius: 999px;
+	background: rgba(16, 14, 12, .9);
+	color: #fff;
+	font: 600 12px/1 var(--f-body);
+	cursor: pointer;
+}
+
+/* пока панель открыта, кнопка заказа и подвал поднимаются, чтобы ничего не перекрывалось */
+[data-demo="on"] .orderbar { bottom: 128px; }
+[data-demo="on"] .floor { padding-bottom: 250px; }

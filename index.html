@@ -14,8 +14,31 @@
 	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700&family=PT+Serif:wght@700&display=swap&text=%E3%82%A6%E3%83%9E%E3%83%AD%E3%83%95%E3%82%BB%E3%83%83%E3%83%88%E3%83%AD%E3%83%BC%E3%83%AB%E7%84%BC%E3%81%8D%E5%A4%A9%E3%81%B7%E3%82%89%E5%B7%BB%E3%83%94%E3%82%B6%E3%82%B9%E3%83%8A%E3%82%AF%E3%83%89%E3%82%B0%E3%83%AA%E3%83%B3%D0%A1%D1%83%D1%88%D0%B8%D0%9C-%20">
 	<link rel="stylesheet" href="styles.css">
 	<script>
-		/* ночную тему включаем до отрисовки страницы, чтобы не мелькнула светлая */
-		try { if (localStorage.getItem("sushi-mushi-interior-theme") === '"night"') document.documentElement.dataset.theme = "night"; } catch (e) {}
+		/* тёмную тему и стиль кнопок включаем до отрисовки страницы, чтобы ничего не мелькало */
+		try {
+			var read = function (key, fallback) {
+				var saved = localStorage.getItem("sushi-mushi-interior-" + key);
+				return saved === null ? fallback : JSON.parse(saved);
+			};
+			var theme = read("theme", "day");
+			if (["night", "lacquer", "veranda"].indexOf(theme) >= 0) {
+				document.documentElement.dataset.theme = theme;
+				document.documentElement.dataset.dark = "1";
+			}
+			var buttons = read("buttons", "black");
+			if (["wood", "outline"].indexOf(buttons) >= 0) document.documentElement.dataset.buttons = buttons;
+		} catch (e) {}
+		/* демо-панель для показа заказчику: включается адресом с «?demo» в конце */
+		try {
+			if (/[?&#]demo\b/.test(location.search + location.hash)) {
+				var css = document.createElement("link");
+				css.rel = "stylesheet"; css.href = "demo.css";
+				document.head.appendChild(css);
+				var js = document.createElement("script");
+				js.src = "demo.js"; js.defer = true;
+				document.head.appendChild(js);
+			}
+		} catch (e) {}
 	</script>
 </head>
 <body>
