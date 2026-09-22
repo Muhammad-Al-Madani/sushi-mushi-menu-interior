@@ -45,6 +45,24 @@ window.SUSHI_MENU = {
 		"en": "Prices as of September 2026",
 		"ar": "الأسعار لشهر سبتمبر 2026"
 	},
+	"extras": [
+		{
+			"id": "chopsticks",
+			"name": { "ru": "Палочки", "en": "Chopsticks", "ar": "عيدان طعام" }
+		},
+		{
+			"id": "wasabi",
+			"name": { "ru": "Васаби", "en": "Wasabi", "ar": "واسابي" }
+		},
+		{
+			"id": "ginger",
+			"name": { "ru": "Имбирь", "en": "Pickled ginger", "ar": "زنجبيل مخلل" }
+		},
+		{
+			"id": "soy",
+			"name": { "ru": "Соевый соус", "en": "Soy sauce", "ar": "صلصة الصويا" }
+		}
+	],
 	"sections": [
 		{
 			"id": "pizza",

@@ -33,17 +33,6 @@
 			var buttons = read("buttons", "black");
 			if (["wood", "outline"].indexOf(buttons) >= 0) document.documentElement.dataset.buttons = buttons;
 		} catch (e) {}
-		/* демо-панель для показа заказчику: включается адресом с «?demo» в конце */
-		try {
-			if (/[?&#]demo\b/.test(location.search + location.hash)) {
-				var css = document.createElement("link");
-				css.rel = "stylesheet"; css.href = "demo.css";
-				document.head.appendChild(css);
-				var js = document.createElement("script");
-				js.src = "demo.js"; js.defer = true;
-				document.head.appendChild(js);
-			}
-		} catch (e) {}
 	</script>
 </head>
 <body>
@@ -92,6 +81,7 @@
 		<p data-hours></p>
 		<div class="phones" data-phones></div>
 		<p class="floor-note"><span data-prices-date></span>. <span data-i18n="floorNote"></span></p>
+		<div class="looks" id="looks"></div>
 	</footer>
 
 	<div class="toast" id="toast" role="status" hidden></div>
@@ -113,6 +103,7 @@
 				<button type="button" class="icon-btn" data-close data-i18n-label="close">✕</button>
 			</div>
 			<div id="order-lines"></div>
+			<div class="extras" id="extras" hidden></div>
 			<div class="sheet-foot">
 				<div class="total-row"><span data-i18n="total"></span><strong class="price" id="order-total" dir="ltr"></strong></div>
 				<p class="ready-note" id="ready-note" hidden></p>

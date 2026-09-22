@@ -32,6 +32,12 @@
 			backToSet: (name) => `Вернуться к сету «${name}»`,
 			add: "Добавить", more: "Добавить ещё", less: "Убрать одну",
 			prices: "Цены", toNight: "Ночная тема", toDay: "Светлая тема",
+			extras: "Приборы и соусы",
+			extrasNote: (n) => `Посчитали на ${n} чел. Уберите лишнее — кафе не положит зря`,
+			looks: "Оформление",
+			looksTheme: "Тема", looksButtons: "Кнопки",
+			themeDay: "День", themeNight: "Вечер в зале", themeLacquer: "Чёрный лак", themeVeranda: "Ночь на веранде",
+			btnBlack: "Чёрные", btnWood: "Деревянные", btnOutline: "Контурные",
 			floorNote: "Калорийность и время приготовления указаны примерно.",
 		},
 		en: {
@@ -50,6 +56,12 @@
 			backToSet: (name) => `Back to the “${name}” set`,
 			add: "Add", more: "One more", less: "One less",
 			prices: "Prices", toNight: "Dark theme", toDay: "Light theme",
+			extras: "Cutlery and sauces",
+			extrasNote: (n) => `Counted for ${n} people. Remove what you do not need`,
+			looks: "Look",
+			looksTheme: "Theme", looksButtons: "Buttons",
+			themeDay: "Day", themeNight: "Evening indoors", themeLacquer: "Black lacquer", themeVeranda: "Night on the veranda",
+			btnBlack: "Black", btnWood: "Wood", btnOutline: "Outline",
 			floorNote: "Calories and cooking time are approximate.",
 		},
 		ar: {
@@ -68,6 +80,12 @@
 			backToSet: (name) => `العودة إلى طقم «${name}»`,
 			add: "أضف", more: "زيادة", less: "إنقاص",
 			prices: "الأسعار", toNight: "الوضع الليلي", toDay: "الوضع النهاري",
+			extras: "أدوات وصلصات",
+			extrasNote: (n) => `حُسبت لـ ${n} أشخاص. احذف ما لا تحتاجه`,
+			looks: "المظهر",
+			looksTheme: "السمة", looksButtons: "الأزرار",
+			themeDay: "نهار", themeNight: "مساء في الصالة", themeLacquer: "لاكيه أسود", themeVeranda: "ليلة على الشرفة",
+			btnBlack: "سوداء", btnWood: "خشبية", btnOutline: "بإطار",
 			floorNote: "السعرات ووقت التحضير تقريبية.",
 		},
 	};
@@ -101,10 +119,12 @@
 
 	// ---------- все позиции ----------
 	const byId = new Map();
+	const sectionOf = new Map(); // блюдо → раздел, по нему считаем число человек
 	const lines = new Map(); // ключ строки заказа → { item, variant }
 	for (const section of MENU.sections)
 		for (const item of section.items) {
 			byId.set(item.id, item);
+			sectionOf.set(item.id, section.id);
 			if (item.variants) for (const v of item.variants) lines.set(`${item.id}:${v.id}`, { item, variant: v });
 			else if (item.price != null) lines.set(item.id, { item, variant: null });
 		}
@@ -115,6 +135,7 @@
 	let theme = DARK_THEMES.includes(store.get("theme", "day")) ? store.get("theme", "day") : "day";
 	let pricesHidden = store.get("prices", "shown") === "hidden";
 	let order = sanitize(store.get("order", {}));
+	let extras = store.get("extras", {}); // { id: { qty, touched } } — что гость поправил руками
 
 	function pickLanguage() {
 		const saved = store.get("lang", null);
@@ -361,6 +382,56 @@
 		if ($("order-sheet").open) renderOrderLines();
 	}
 
+	// ---------- приборы и соусы ----------
+	// Ролл на 8 штук считаем за одного человека, пиццу — за двоих. Это и есть «на сколько персон».
+	function personsCount() {
+		let people = 0;
+		for (const key of Object.keys(order)) {
+			const { item } = lines.get(key);
+			const where = sectionOf.get(item.id);
+			if (item.pieces) people += (item.pieces / 8) * order[key];
+			else if (where === "pizza") people += 2 * order[key];
+			else if (where === "rolldogs") people += order[key];
+		}
+		return Math.max(1, Math.min(20, Math.ceil(people)));
+	}
+
+	// больше, чем на компанию + один запасной, положить нельзя: это спасает от горы лишних соусов
+	const extraLimit = (persons) => persons + 1;
+	function extraQty(id, persons) {
+		const saved = extras[id];
+		if (saved && saved.touched) return Math.max(0, Math.min(saved.qty, extraLimit(persons)));
+		return persons;
+	}
+
+	function changeExtra(id, dir) {
+		const persons = personsCount();
+		const next = Math.max(0, Math.min(extraLimit(persons), extraQty(id, persons) + dir));
+		extras[id] = { qty: next, touched: true };
+		store.set("extras", extras);
+		renderExtras();
+	}
+
+	function renderExtras() {
+		const box = $("extras");
+		if (!box) return;
+		const persons = personsCount();
+		box.hidden = Object.keys(order).length === 0;
+		box.innerHTML = `<p class="extras-title">${esc(t("extras"))}</p>
+			<p class="extras-note">${esc(t("extrasNote")(nf.format(persons)))}</p>
+			<ul class="extras-list">${MENU.extras.map((extra) => {
+				const qty = extraQty(extra.id, persons);
+				return `<li class="extra" data-extra="${esc(extra.id)}">
+					<span class="extra-name">${esc(text(extra.name))}</span>
+					<span class="stepper stepper--small" role="group" aria-label="${esc(text(extra.name))}">
+						<button type="button" data-extra-act="minus" aria-label="${t("less")}"${qty === 0 ? " disabled" : ""}>${ICON.minus}</button>
+						<output>${nf.format(qty)}</output>
+						<button type="button" data-extra-act="plus" aria-label="${t("more")}"${qty >= extraLimit(persons) ? " disabled" : ""}>${ICON.plus}</button>
+					</span>
+				</li>`;
+			}).join("")}</ul>`;
+	}
+
 	function readyIn() {
 		const times = Object.keys(order).map((key) => lines.get(key).item.time || 0);
 		return times.length ? Math.max(...times) : 0;
@@ -388,6 +459,8 @@
 			</div>`;
 		}).join("") : `<p class="empty">${esc(t("empty"))}</p>`;
 
+		renderExtras();
+
 		const minutes = readyIn();
 		$("ready-note").hidden = !minutes;
 		$("ready-note").textContent = minutes ? t("ready")(nf.format(minutes)) : "";
@@ -407,7 +480,9 @@
 		const sum = (value) => `${ru.format(value)} ₽`;
 		const rows = Object.keys(order).map((key) =>
 			`• ${lineName(key, "ru")} × ${order[key]} — ${sum(unitPrice(key) * order[key])}`);
-		return ["Здравствуйте! Хочу сделать заказ:", ...rows, `Итого: ${sum(orderTotal())}`]
+		const persons = personsCount();
+		const kit = MENU.extras.map((extra) => `${extra.name.ru.toLowerCase()} — ${extraQty(extra.id, persons)}`).join(", ");
+		return ["Здравствуйте! Хочу сделать заказ:", ...rows, `Приборы: ${kit}`, `Итого: ${sum(orderTotal())}`]
 			.join("\n").replace(/[  ]/g, " ");
 	}
 
@@ -462,19 +537,27 @@
 		btn.setAttribute("aria-label", theme === "day" ? t("toNight") : t("toDay"));
 		const meta = document.querySelector('meta[name="theme-color"]');
 		if (meta) meta.setAttribute("content", getComputedStyle(root).getPropertyValue("--black").trim() || "#121212");
+		renderLooks();
 	}
 
-	// ручка для демо-панели: она подключается только по ссылке с ?demo
-	window.SUSHI_UI = {
-		themes: ["day", ...DARK_THEMES],
-		getTheme: () => theme,
-		setTheme(next) {
-			theme = DARK_THEMES.includes(next) ? next : "day";
-			if (theme !== "day") { darkTheme = theme; store.set("darkTheme", darkTheme); }
-			store.set("theme", theme);
-			applyTheme();
-		},
-	};
+	// ---------- переключатель оформления в подвале ----------
+	// Пока Амин выбирает вид, переключатель стоит внизу страницы: гости туда почти не доезжают.
+	function renderLooks() {
+		const box = $("looks");
+		if (!box) return;
+		const rows = [
+			{ id: "theme", current: theme, title: t("looksTheme"), options: [
+				["day", t("themeDay")], ["night", t("themeNight")], ["lacquer", t("themeLacquer")], ["veranda", t("themeVeranda")]] },
+			{ id: "buttons", current: root.dataset.buttons || "black", title: t("looksButtons"), options: [
+				["black", t("btnBlack")], ["wood", t("btnWood")], ["outline", t("btnOutline")]] },
+		];
+		box.innerHTML = `<p class="looks-title">${esc(t("looks"))}</p>` + rows.map((row) => `
+			<div class="looks-row" data-look="${row.id}">
+				<span class="looks-label">${esc(row.title)}</span>
+				<div class="looks-chips">${row.options.map(([value, label]) =>
+					`<button type="button" data-look-value="${value}" aria-pressed="${String(value === row.current)}">${esc(label)}</button>`).join("")}</div>
+			</div>`).join("");
+	}
 
 	// ---------- контакты ----------
 	function renderContacts() {
@@ -498,6 +581,28 @@
 		if (act) {
 			const holder = act.closest("[data-key]");
 			if (holder) change(holder.dataset.key, act.dataset.act === "plus" ? 1 : -1);
+			return;
+		}
+		const extraAct = event.target.closest("[data-extra-act]");
+		if (extraAct) {
+			const row = extraAct.closest("[data-extra]");
+			if (row) changeExtra(row.dataset.extra, extraAct.dataset.extraAct === "plus" ? 1 : -1);
+			return;
+		}
+		const look = event.target.closest("[data-look-value]");
+		if (look) {
+			const group = look.closest("[data-look]").dataset.look;
+			const value = look.dataset.lookValue;
+			if (group === "theme") {
+				theme = DARK_THEMES.includes(value) ? value : "day";
+				if (theme !== "day") { darkTheme = theme; store.set("darkTheme", darkTheme); }
+				store.set("theme", theme);
+				applyTheme();
+			} else {
+				if (value === "black") delete root.dataset.buttons; else root.dataset.buttons = value;
+				store.set("buttons", value);
+			}
+			renderLooks();
 			return;
 		}
 		const jump = event.target.closest("[data-jump]");
