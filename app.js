@@ -33,9 +33,11 @@
 			add: "Добавить", more: "Добавить ещё", less: "Убрать одну",
 			prices: "Цены", toNight: "Ночная тема", toDay: "Светлая тема",
 			extras: "Приборы и соусы",
-			extrasNote: (n) => `Посчитали на ${n} чел. Уберите лишнее — кафе не положит зря`,
+			extrasNote: (n) => `Рассчитано на ${n} чел. Количество можно изменить`,
+			removed: "убрано",
 			looks: "Оформление",
-			looksButtons: "Кнопки",
+			looksButtons: "Кнопки", looksExtras: "Приборы",
+			extraRows: "Строчки", extraChips: "Плашки", extraLeaf: "Листочек",
 			btnBlack: "Чёрные", btnWood: "Деревянные", btnOutline: "Контурные",
 			floorNote: "Калорийность и время приготовления указаны примерно.",
 		},
@@ -56,9 +58,11 @@
 			add: "Add", more: "One more", less: "One less",
 			prices: "Prices", toNight: "Dark theme", toDay: "Light theme",
 			extras: "Cutlery and sauces",
-			extrasNote: (n) => `Counted for ${n} people. Remove what you do not need`,
+			extrasNote: (n) => `Calculated for ${n} people. You can change the amounts`,
+			removed: "removed",
 			looks: "Look",
-			looksButtons: "Buttons",
+			looksButtons: "Buttons", looksExtras: "Cutlery",
+			extraRows: "Rows", extraChips: "Cards", extraLeaf: "Paper",
 			btnBlack: "Black", btnWood: "Wood", btnOutline: "Outline",
 			floorNote: "Calories and cooking time are approximate.",
 		},
@@ -79,9 +83,11 @@
 			add: "أضف", more: "زيادة", less: "إنقاص",
 			prices: "الأسعار", toNight: "الوضع الليلي", toDay: "الوضع النهاري",
 			extras: "أدوات وصلصات",
-			extrasNote: (n) => `حُسبت لـ ${n} أشخاص. احذف ما لا تحتاجه`,
+			extrasNote: (n) => `محسوب لـ ${n} أشخاص. يمكنك تغيير الكمية`,
+			removed: "أُزيل",
 			looks: "المظهر",
-			looksButtons: "الأزرار",
+			looksButtons: "الأزرار", looksExtras: "الأدوات",
+			extraRows: "أسطر", extraChips: "بطاقات", extraLeaf: "ورقة",
 			btnBlack: "سوداء", btnWood: "خشبية", btnOutline: "بإطار",
 			floorNote: "السعرات ووقت التحضير تقريبية.",
 		},
@@ -133,6 +139,7 @@
 	let pricesHidden = store.get("prices", "shown") === "hidden";
 	let order = sanitize(store.get("order", {}));
 	let extras = store.get("extras", {}); // { id: { qty, touched } } — что гость поправил руками
+	let sheetKeys = []; // что показываем в открытом окне заказа: включая убранное, чтобы можно было вернуть
 
 	function pickLanguage() {
 		const saved = store.get("lang", null);
@@ -229,6 +236,7 @@
 		if (next > 0) order[key] = Math.min(next, 99);
 		else delete order[key];
 		store.set("order", order);
+		if ($("order-sheet").open && !sheetKeys.includes(key)) sheetKeys.push(key);
 		document.querySelectorAll(`#menu [data-key="${CSS.escape(key)}"]`).forEach((el) => { el.innerHTML = buyInner(key); });
 		refreshOrder();
 		if (added) toast(t("added")(lineName(key)));
@@ -422,6 +430,7 @@
 				const qty = extraQty(extra, persons);
 				return `<li class="extra" data-extra="${esc(extra.id)}">
 					<span class="extra-name">${esc(text(extra.name))}</span>
+					<span class="extra-dots" aria-hidden="true"></span>
 					<span class="stepper stepper--small" role="group" aria-label="${esc(text(extra.name))}">
 						<button type="button" data-extra-act="minus" aria-label="${t("less")}"${qty === 0 ? " disabled" : ""}>${ICON.minus}</button>
 						<output>${nf.format(qty)}</output>
@@ -437,24 +446,26 @@
 	}
 
 	function renderOrderLines() {
-		const keys = Object.keys(order);
+		// пока окно открыто, убранные блюда остаются строкой с нулём: можно вернуть одним «+»
+		const keys = (sheetKeys.length ? sheetKeys : Object.keys(order)).filter((key) => lines.has(key));
 		const focused = document.activeElement && document.activeElement.closest("#order-lines [data-key]");
 		const focusKey = focused && focused.dataset.key;
 		const focusAct = document.activeElement && document.activeElement.dataset.act;
 
 		$("order-lines").innerHTML = keys.length ? keys.map((key) => {
 			const { item, variant } = lines.get(key);
-			return `<div class="line" data-key="${esc(key)}">
+			const qty = order[key] || 0;
+			return `<div class="line${qty ? "" : " line--removed"}" data-key="${esc(key)}">
 				<div class="line-text">
 					<span class="line-name">${esc(text(item.name))}</span>
 					<span class="line-unit">${variant ? `${esc(text(variant.name))} · ` : ""}${priceTag(unitPrice(key))}</span>
 				</div>
 				<span class="stepper" role="group" aria-label="${esc(lineName(key))}">
-					<button type="button" data-act="minus" aria-label="${t("less")}">${ICON.minus}</button>
-					<output>${nf.format(order[key])}</output>
+					<button type="button" data-act="minus" aria-label="${t("less")}"${qty ? "" : " disabled"}>${ICON.minus}</button>
+					<output>${nf.format(qty)}</output>
 					<button type="button" data-act="plus" aria-label="${t("more")}">${ICON.plus}</button>
 				</span>
-				${priceTag(unitPrice(key) * order[key], "line-sum price")}
+				${qty ? priceTag(unitPrice(key) * qty, "line-sum price") : `<span class="line-sum line-sum--removed">${esc(t("removed"))}</span>`}
 			</div>`;
 		}).join("") : `<p class="empty">${esc(t("empty"))}</p>`;
 
@@ -545,6 +556,8 @@
 		const box = $("looks");
 		if (!box) return;
 		const rows = [
+			{ id: "extras", current: root.dataset.extrasStyle || "rows", title: t("looksExtras"), options: [
+				["rows", t("extraRows")], ["chips", t("extraChips")], ["leaf", t("extraLeaf")]] },
 			{ id: "buttons", current: root.dataset.buttons || "black", title: t("looksButtons"), options: [
 				["black", t("btnBlack")], ["wood", t("btnWood")], ["outline", t("btnOutline")]] },
 		];
@@ -588,9 +601,16 @@
 		}
 		const look = event.target.closest("[data-look-value]");
 		if (look) {
+			const group = look.closest("[data-look]").dataset.look;
 			const value = look.dataset.lookValue;
-			if (value === "black") delete root.dataset.buttons; else root.dataset.buttons = value;
-			store.set("buttons", value);
+			if (group === "extras") {
+				root.dataset.extrasStyle = value;
+				store.set("extrasStyle", value);
+				renderExtras();
+			} else {
+				if (value === "black") delete root.dataset.buttons; else root.dataset.buttons = value;
+				store.set("buttons", value);
+			}
 			renderLooks();
 			return;
 		}
@@ -649,6 +669,7 @@
 	});
 
 	$("open-order").addEventListener("click", () => {
+		sheetKeys = Object.keys(order);
 		renderOrderLines();
 		$("order-sheet").showModal();
 		const box = $("extras");
@@ -676,7 +697,9 @@
 	// закрытие окна нажатием на затемнённый фон
 	document.querySelectorAll("dialog").forEach((dialog) => {
 		dialog.addEventListener("click", (event) => { if (event.target === dialog) dialog.close(); });
+		dialog.addEventListener("close", () => { sheetKeys = []; });
 	});
 
+	root.dataset.extrasStyle = ["rows", "chips", "leaf"].includes(store.get("extrasStyle", "rows")) ? store.get("extrasStyle", "rows") : "rows";
 	applyLanguage();
 })();

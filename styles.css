@@ -642,3 +642,33 @@ button.set-name { padding: 0; border: 0; background: none; color: inherit; text-
 }
 .extras.pulse { animation: extras-pulse 1.8s ease-out 1; }
 @media (prefers-reduced-motion: reduce) { .extras.pulse { animation: none; } }
+
+/* ---------- убранное блюдо: остаётся строкой, пока открыто окно заказа ---------- */
+.line--removed { opacity: .55; }
+.line--removed .line-name { text-decoration: line-through; }
+.line-sum--removed { text-align: right; font: 600 12px/1.2 var(--f-body); color: var(--muted); }
+
+/* ---------- три вида блока «Приборы и соусы» ---------- */
+.extra-dots { display: none; }
+
+[data-extras-style="chips"] .extras-list { grid-template-columns: 1fr 1fr; gap: 8px; }
+[data-extras-style="chips"] .extra {
+	flex-direction: column;
+	gap: 8px;
+	padding: 10px 8px;
+	border: 1px solid #ece0cd;
+	border-radius: 12px;
+	background: #fff;
+}
+[data-extras-style="chips"] .extra-name { font-size: 13px; text-align: center; }
+[data-dark][data-extras-style="chips"] .extra { border-color: rgba(255, 255, 255, .12); background: rgba(255, 255, 255, .05); }
+
+[data-extras-style="leaf"] .extras { border-style: solid; border-color: #e6d8c4; background: var(--paper); }
+[data-extras-style="leaf"] .extras-list { gap: 10px; }
+[data-extras-style="leaf"] .extra { gap: 0; }
+[data-extras-style="leaf"] .extra-name { font: 500 15px/1.2 var(--f-body); letter-spacing: .01em; }
+[data-extras-style="leaf"] .extra-dots { display: block; flex: 1; margin: 0 10px; border-bottom: 1px dotted #c9b79d; transform: translateY(-4px); }
+[data-extras-style="leaf"] .stepper--small { border: 1px solid #d8c6ae; background: transparent; color: var(--ink); }
+[data-dark][data-extras-style="leaf"] .extras { border-color: rgba(255, 255, 255, .12); }
+[data-dark][data-extras-style="leaf"] .extra-dots { border-bottom-color: rgba(255, 255, 255, .25); }
+[data-dark][data-extras-style="leaf"] .stepper--small { border-color: rgba(255, 255, 255, .2); color: var(--ink); }
