@@ -48,18 +48,22 @@ window.SUSHI_MENU = {
 	"extras": [
 		{
 			"id": "chopsticks",
+			"perPerson": 1,
 			"name": { "ru": "Палочки", "en": "Chopsticks", "ar": "عيدان طعام" }
 		},
 		{
 			"id": "wasabi",
+			"perPerson": 0.5,
 			"name": { "ru": "Васаби", "en": "Wasabi", "ar": "واسابي" }
 		},
 		{
 			"id": "ginger",
+			"perPerson": 0.5,
 			"name": { "ru": "Имбирь", "en": "Pickled ginger", "ar": "زنجبيل مخلل" }
 		},
 		{
 			"id": "soy",
+			"perPerson": 1,
 			"name": { "ru": "Соевый соус", "en": "Soy sauce", "ar": "صلصة الصويا" }
 		}
 	],

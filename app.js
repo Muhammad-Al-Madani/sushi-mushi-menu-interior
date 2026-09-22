@@ -12,7 +12,7 @@
 	const IMAGES = "images/dishes/";
 	const ORDER = ["sets", "cold", "baked", "fried", "classic", "pizza", "snacks", "rolldogs", "drinks"];
 	const LANGS = ["ru", "en", "ar"];
-	const DARK_THEMES = ["night", "lacquer", "veranda"];
+	const DARK_THEMES = ["night"];
 	const ARABIC_FONTS = "https://fonts.googleapis.com/css2?family=Cairo:wght@600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap";
 
 	const UI = {
@@ -35,8 +35,7 @@
 			extras: "Приборы и соусы",
 			extrasNote: (n) => `Посчитали на ${n} чел. Уберите лишнее — кафе не положит зря`,
 			looks: "Оформление",
-			looksTheme: "Тема", looksButtons: "Кнопки",
-			themeDay: "День", themeNight: "Вечер в зале", themeLacquer: "Чёрный лак", themeVeranda: "Ночь на веранде",
+			looksButtons: "Кнопки",
 			btnBlack: "Чёрные", btnWood: "Деревянные", btnOutline: "Контурные",
 			floorNote: "Калорийность и время приготовления указаны примерно.",
 		},
@@ -59,8 +58,7 @@
 			extras: "Cutlery and sauces",
 			extrasNote: (n) => `Counted for ${n} people. Remove what you do not need`,
 			looks: "Look",
-			looksTheme: "Theme", looksButtons: "Buttons",
-			themeDay: "Day", themeNight: "Evening indoors", themeLacquer: "Black lacquer", themeVeranda: "Night on the veranda",
+			looksButtons: "Buttons",
 			btnBlack: "Black", btnWood: "Wood", btnOutline: "Outline",
 			floorNote: "Calories and cooking time are approximate.",
 		},
@@ -83,8 +81,7 @@
 			extras: "أدوات وصلصات",
 			extrasNote: (n) => `حُسبت لـ ${n} أشخاص. احذف ما لا تحتاجه`,
 			looks: "المظهر",
-			looksTheme: "السمة", looksButtons: "الأزرار",
-			themeDay: "نهار", themeNight: "مساء في الصالة", themeLacquer: "لاكيه أسود", themeVeranda: "ليلة على الشرفة",
+			looksButtons: "الأزرار",
 			btnBlack: "سوداء", btnWood: "خشبية", btnOutline: "بإطار",
 			floorNote: "السعرات ووقت التحضير تقريبية.",
 		},
@@ -398,15 +395,17 @@
 
 	// больше, чем на компанию + один запасной, положить нельзя: это спасает от горы лишних соусов
 	const extraLimit = (persons) => persons + 1;
-	function extraQty(id, persons) {
-		const saved = extras[id];
+	function extraQty(extra, persons) {
+		const saved = extras[extra.id];
 		if (saved && saved.touched) return Math.max(0, Math.min(saved.qty, extraLimit(persons)));
-		return persons;
+		// палочки и соус нужны каждому, васаби и имбирь ест примерно половина компании
+		return Math.max(1, Math.min(extraLimit(persons), Math.ceil(persons * (extra.perPerson || 1))));
 	}
 
 	function changeExtra(id, dir) {
 		const persons = personsCount();
-		const next = Math.max(0, Math.min(extraLimit(persons), extraQty(id, persons) + dir));
+		const extra = MENU.extras.find((e) => e.id === id);
+		const next = Math.max(0, Math.min(extraLimit(persons), extraQty(extra, persons) + dir));
 		extras[id] = { qty: next, touched: true };
 		store.set("extras", extras);
 		renderExtras();
@@ -420,7 +419,7 @@
 		box.innerHTML = `<p class="extras-title">${esc(t("extras"))}</p>
 			<p class="extras-note">${esc(t("extrasNote")(nf.format(persons)))}</p>
 			<ul class="extras-list">${MENU.extras.map((extra) => {
-				const qty = extraQty(extra.id, persons);
+				const qty = extraQty(extra, persons);
 				return `<li class="extra" data-extra="${esc(extra.id)}">
 					<span class="extra-name">${esc(text(extra.name))}</span>
 					<span class="stepper stepper--small" role="group" aria-label="${esc(text(extra.name))}">
@@ -481,7 +480,7 @@
 		const rows = Object.keys(order).map((key) =>
 			`• ${lineName(key, "ru")} × ${order[key]} — ${sum(unitPrice(key) * order[key])}`);
 		const persons = personsCount();
-		const kit = MENU.extras.map((extra) => `${extra.name.ru.toLowerCase()} — ${extraQty(extra.id, persons)}`).join(", ");
+		const kit = MENU.extras.map((extra) => `${extra.name.ru.toLowerCase()} — ${extraQty(extra, persons)}`).join(", ");
 		return ["Здравствуйте! Хочу сделать заказ:", ...rows, `Приборы: ${kit}`, `Итого: ${sum(orderTotal())}`]
 			.join("\n").replace(/[  ]/g, " ");
 	}
@@ -546,8 +545,6 @@
 		const box = $("looks");
 		if (!box) return;
 		const rows = [
-			{ id: "theme", current: theme, title: t("looksTheme"), options: [
-				["day", t("themeDay")], ["night", t("themeNight")], ["lacquer", t("themeLacquer")], ["veranda", t("themeVeranda")]] },
 			{ id: "buttons", current: root.dataset.buttons || "black", title: t("looksButtons"), options: [
 				["black", t("btnBlack")], ["wood", t("btnWood")], ["outline", t("btnOutline")]] },
 		];
@@ -591,17 +588,9 @@
 		}
 		const look = event.target.closest("[data-look-value]");
 		if (look) {
-			const group = look.closest("[data-look]").dataset.look;
 			const value = look.dataset.lookValue;
-			if (group === "theme") {
-				theme = DARK_THEMES.includes(value) ? value : "day";
-				if (theme !== "day") { darkTheme = theme; store.set("darkTheme", darkTheme); }
-				store.set("theme", theme);
-				applyTheme();
-			} else {
-				if (value === "black") delete root.dataset.buttons; else root.dataset.buttons = value;
-				store.set("buttons", value);
-			}
+			if (value === "black") delete root.dataset.buttons; else root.dataset.buttons = value;
+			store.set("buttons", value);
 			renderLooks();
 			return;
 		}
@@ -662,6 +651,12 @@
 	$("open-order").addEventListener("click", () => {
 		renderOrderLines();
 		$("order-sheet").showModal();
+		const box = $("extras");
+		if (!box.hidden && !Object.keys(extras).length) {
+			box.classList.remove("pulse");
+			void box.offsetWidth;
+			box.classList.add("pulse");
+		}
 	});
 
 	$("send-whatsapp").addEventListener("click", () => {

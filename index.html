@@ -26,7 +26,7 @@
 				document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
 			}
 			var theme = read("theme", "day");
-			if (["night", "lacquer", "veranda"].indexOf(theme) >= 0) {
+			if (theme === "night") {
 				document.documentElement.dataset.theme = theme;
 				document.documentElement.dataset.dark = "1";
 			}

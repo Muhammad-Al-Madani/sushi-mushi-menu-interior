@@ -456,23 +456,13 @@ dialog.sheet::backdrop { background: rgba(10, 8, 6, .55); }
 
 /* ==========================================================
    Тёмные темы. Палитр три, различаются только цветами:
-     night   — «Вечер в зале» (тёмная по умолчанию)
-     lacquer — «Чёрный лак»
-     veranda — «Ночь на веранде»
+     night — «Вечер в зале», выбрана заказчиком.
    Всё остальное ниже общее и включается признаком data-dark.
    Сайт открывается светлым, тёмную гость включает кнопкой в шапке.
    ========================================================== */
 :root[data-theme="night"] {
 	--black: #141110; --ink: #f2ece2; --muted: #a4988c; --wall: #191512; --card: #221d18; --paper: #241f19;
 	--wood: #c08a52; --wood-dark: #e0b183; --floor: #120f0d; --glow: #ffcf7a; --red: #c4454c;
-}
-:root[data-theme="lacquer"] {
-	--black: #0b0b0b; --ink: #f5f5f5; --muted: #9a9a9a; --wall: #0e0e0e; --card: #161616; --paper: #161616;
-	--wood: #c8323c; --wood-dark: #e06a72; --floor: #0b0b0b; --glow: #c8323c; --red: #c8323c;
-}
-:root[data-theme="veranda"] {
-	--black: #1a130d; --ink: #f3e8d8; --muted: #b09a80; --wall: #1e1711; --card: #2a2119; --paper: #2d241b;
-	--wood: #d09a63; --wood-dark: #e8bd8e; --floor: #140f0a; --glow: #ffcf7a; --red: #cf5a4e;
 }
 
 [data-dark] body { box-shadow: 0 0 60px rgba(0, 0, 0, .75); }
@@ -644,3 +634,11 @@ button.set-name { padding: 0; border: 0; background: none; color: inherit; text-
 	cursor: pointer;
 }
 .looks-chips button[aria-pressed="true"] { border-color: #f2e6d6; background: #f2e6d6; color: #2a1d14; }
+
+/* подсветка приборов при первом открытии заказа, чтобы блок не пропустили */
+@keyframes extras-pulse {
+	0%, 55% { border-color: var(--wood); box-shadow: 0 0 0 3px rgba(168, 111, 62, .18); }
+	100% { border-color: #e0d3bf; box-shadow: none; }
+}
+.extras.pulse { animation: extras-pulse 1.8s ease-out 1; }
+@media (prefers-reduced-motion: reduce) { .extras.pulse { animation: none; } }
