@@ -585,7 +585,9 @@
 		const credit = $("credit");
 		if (credit && MENU.author) {
 			const name = esc(MENU.author.name);
-			credit.innerHTML = `${esc(t("credit"))} ${MENU.author.url ? `<a href="${esc(MENU.author.url)}" rel="noopener">${name}</a>` : name}`;
+			credit.innerHTML = MENU.author.url
+				? `${esc(t("credit"))} <a href="${esc(MENU.author.url)}" rel="noopener">${name}<span aria-hidden="true"> →</span></a>`
+				: `${esc(t("credit"))} ${name}`;
 		}
 		$("bar-icon").innerHTML = ICON.bag;
 	}

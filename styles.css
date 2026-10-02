@@ -560,8 +560,8 @@ button.set-name { padding: 0; border: 0; background: none; color: inherit; text-
 [data-dark] .lang-row button[aria-pressed="true"] { background: var(--ink); color: var(--black); }
 
 /* подпись автора — тихая строка в самом низу */
-.credit { margin: 16px 0 0; font: 500 12px/1.4 var(--f-body); color: rgba(242, 230, 214, .45); }
-.credit a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+.credit { margin: 16px 0 0; font: 500 11px/1.4 var(--f-body); color: rgba(242, 230, 214, .38); }
+.credit a { color: rgba(242, 230, 214, .62); text-decoration: none; border-bottom: 1px solid rgba(242, 230, 214, .28); }
 
 /* ---------- арабский: свои шрифты и разворот страницы справа налево ---------- */
 :root[lang="ar"] {
