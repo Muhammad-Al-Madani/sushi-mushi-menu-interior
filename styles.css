@@ -544,45 +544,24 @@ button.set-name { padding: 0; border: 0; background: none; color: inherit; text-
 
 @media (prefers-reduced-motion: reduce) { .dish.flash { animation: none; outline-color: var(--wood); } }
 
-/* ---------- переключатель языка ---------- */
-.lang { position: relative; flex: none; }
-.lang-btn {
-	display: grid;
-	place-items: center;
-	width: 38px;
-	height: 38px;
-	padding: 0;
-	border: 1px solid rgba(255, 255, 255, .28);
-	border-radius: 50%;
+/* ---------- выбор языка на первом экране: каждый язык написан на себе ---------- */
+.lang-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.lang-row button {
+	padding: 9px 14px;
+	border: 1.5px solid #151515;
+	border-radius: 999px;
 	background: transparent;
-	color: #fff;
-	font: 600 12px/1 var(--f-body);
-	letter-spacing: .04em;
+	color: #151515;
+	font: 600 14px/1 var(--f-body);
 	cursor: pointer;
 }
-.lang-menu {
-	position: absolute;
-	top: calc(100% + 8px);
-	inset-inline-end: 0;
-	z-index: 30;
-	display: grid;
-	min-width: 150px;
-	padding: 6px;
-	border-radius: 14px;
-	background: #1c1917;
-	box-shadow: 0 16px 30px -12px rgba(0, 0, 0, .7);
-}
-.lang-menu button {
-	padding: 10px 12px;
-	border: 0;
-	border-radius: 10px;
-	background: none;
-	color: #f2ece2;
-	font: 600 15px/1 var(--f-body);
-	text-align: start;
-	cursor: pointer;
-}
-.lang-menu button[aria-pressed="true"] { background: rgba(255, 255, 255, .12); color: #fff; }
+.lang-row button[aria-pressed="true"] { background: #151515; color: #fff; }
+[data-dark] .lang-row button { border-color: var(--ink); color: var(--ink); }
+[data-dark] .lang-row button[aria-pressed="true"] { background: var(--ink); color: var(--black); }
+
+/* подпись автора — тихая строка в самом низу */
+.credit { margin: 16px 0 0; font: 500 12px/1.4 var(--f-body); color: rgba(242, 230, 214, .45); }
+.credit a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
 
 /* ---------- арабский: свои шрифты и разворот страницы справа налево ---------- */
 :root[lang="ar"] {

@@ -45,6 +45,7 @@ window.SUSHI_MENU = {
 		"en": "Prices as of September 2026",
 		"ar": "الأسعار لشهر سبتمبر 2026"
 	},
+	"author": { "name": "Мухаммад Байрамуков", "url": "" },
 	"extras": [
 		{
 			"id": "chopsticks",

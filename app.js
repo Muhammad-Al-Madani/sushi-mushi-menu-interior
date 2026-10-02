@@ -36,6 +36,7 @@
 			extrasNote: (n) => `Рассчитано на ${n} чел. Количество можно изменить`,
 			removed: "убрано",
 			looks: "Оформление",
+			credit: "Сайт сделал",
 			looksButtons: "Кнопки", looksExtras: "Приборы",
 			extraRows: "Строчки", extraChips: "Плашки", extraLeaf: "Листочек",
 			btnBlack: "Чёрные", btnWood: "Деревянные", btnOutline: "Контурные",
@@ -61,6 +62,7 @@
 			extrasNote: (n) => `Calculated for ${n} people. You can change the amounts`,
 			removed: "removed",
 			looks: "Look",
+			credit: "Website by",
 			looksButtons: "Buttons", looksExtras: "Cutlery",
 			extraRows: "Rows", extraChips: "Cards", extraLeaf: "Paper",
 			btnBlack: "Black", btnWood: "Wood", btnOutline: "Outline",
@@ -86,6 +88,7 @@
 			extrasNote: (n) => `محسوب لـ ${n} أشخاص. يمكنك تغيير الكمية`,
 			removed: "أُزيل",
 			looks: "المظهر",
+			credit: "تصميم الموقع",
 			looksButtons: "الأزرار", looksExtras: "الأدوات",
 			extraRows: "أسطر", extraChips: "بطاقات", extraLeaf: "ورقة",
 			btnBlack: "سوداء", btnWood: "خشبية", btnOutline: "بإطار",
@@ -513,9 +516,11 @@
 		document.querySelectorAll("[data-i18n]").forEach((el) => { el.textContent = t(el.dataset.i18n); });
 		document.querySelectorAll("[data-i18n-label]").forEach((el) => { el.setAttribute("aria-label", t(el.dataset.i18nLabel)); });
 		$("nav").setAttribute("aria-label", t("nav"));
-		$("lang-btn").setAttribute("aria-label", t("language"));
-		$("lang-btn").querySelector("span").textContent = { ru: "РУ", en: "EN", ar: "ع" }[lang];
-		$("lang-menu").querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.lang === lang)));
+		$("lang-row").setAttribute("aria-label", t("language"));
+		$("lang-row").innerHTML = LANGS.map((code) => {
+			const label = { ru: "Русский", en: "English", ar: "العربية" }[code];
+			return `<button type="button" data-lang="${code}" lang="${code}"${code === "ar" ? ' dir="rtl"' : ""} aria-pressed="${String(code === lang)}">${label}</button>`;
+		}).join("");
 		$("send-whatsapp").innerHTML = `${ICON.whatsapp}<span>${esc(t("sendWhatsapp"))}</span>`;
 		renderContacts();
 		renderMenu();
@@ -577,15 +582,15 @@
 		document.querySelectorAll("[data-address]").forEach((el) => { el.textContent = text(MENU.address); });
 		document.querySelectorAll("[data-hours]").forEach((el) => { el.textContent = text(MENU.hours); });
 		document.querySelectorAll("[data-prices-date]").forEach((el) => { el.textContent = text(MENU.pricesDate); });
+		const credit = $("credit");
+		if (credit && MENU.author) {
+			const name = esc(MENU.author.name);
+			credit.innerHTML = `${esc(t("credit"))} ${MENU.author.url ? `<a href="${esc(MENU.author.url)}" rel="noopener">${name}</a>` : name}`;
+		}
 		$("bar-icon").innerHTML = ICON.bag;
 	}
 
 	// ---------- события ----------
-	function closeLangMenu() {
-		$("lang-menu").hidden = true;
-		$("lang-btn").setAttribute("aria-expanded", "false");
-	}
-
 	document.addEventListener("click", (event) => {
 		const act = event.target.closest("[data-act]");
 		if (act) {
@@ -625,25 +630,15 @@
 			return;
 		}
 		const langOption = event.target.closest("[data-lang]");
-		if (langOption) {
+		if (langOption && langOption.dataset.lang !== lang) {
 			lang = langOption.dataset.lang;
 			store.set("lang", lang);
-			closeLangMenu();
 			applyLanguage();
 			return;
 		}
-		if (event.target.closest("#lang-btn")) {
-			const opening = $("lang-menu").hidden;
-			$("lang-menu").hidden = !opening;
-			$("lang-btn").setAttribute("aria-expanded", String(opening));
-			return;
-		}
-		closeLangMenu();
 		const closeBtn = event.target.closest("[data-close]");
 		if (closeBtn) closeBtn.closest("dialog").close();
 	});
-
-	document.addEventListener("keydown", (event) => { if (event.key === "Escape") closeLangMenu(); });
 
 	$("prices").addEventListener("click", () => {
 		pricesHidden = !pricesHidden;
